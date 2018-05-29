@@ -1,0 +1,65 @@
+
+/*标题样式*/
+.head td {
+    text-align: center;
+    /*top: expression(this.offsetParent.scrollTop);
+       position: relative;
+       z-index: 80;*/
+       background-color: #fff;/*#98C8F4;*/
+    text-align:center;
+    border-collapse:collapse;
+    top: expression(this.parentElement.offsetParent.parentElement.scrollTop);
+    position: relative; z-index:9999;
+    font-weight:bold;
+    letter-spacing:0.1em;
+    border-top:1px solid #fff;
+    height:2em;
+   
+}
+
+
+#page li {
+    float: left;
+    width: 2em;
+    height: 1.5em;
+    line-height: 1.5em;
+    text-align: center;
+    border: 1px solid #ccc;
+    margin-left: 5px;
+    cursor: pointer;
+    list-style: none;
+}
+
+    #page li.active {
+        border: 1px solid #209ec7;
+    }
+#dataTable {
+/*position:relative;*/
+border-collapse: collapse;
+background-color:#fff;
+
+}
+#dataTable td {
+    cursor: pointer;
+    /*word-break: break-all;*/
+    text-align:center;
+    border-bottom:1px solid #ccc;
+    empty-cells: show;
+}
+.selectedtr {
+background-color:#C8D5E0 !important;
+}
+
+ #dataTable .FixedDataColumn {
+    text-align:center;
+    border-collapse:collapse;
+    text-wrap:none;
+    white-space:nowrap;
+    left: expression(this.parentElement.offsetParent.parentElement.scrollLeft);
+    position: relative; z-index: 9998; 
+    
+}
+  #dataTable  .head .FixedDataColumn {
+z-index:999999;
+}
+
