@@ -8,7 +8,7 @@
        background-color: #98C8F4;
     text-align:center;
     border-collapse:collapse;
-    top: expression(this.parentElement.offsetParent.parentElement.scrollTop);
+    /* top: expression(this.parentElement.offsetParent.parentElement.scrollTop); */
     position: relative; z-index:9999;
     font-weight:bold;
     letter-spacing:0.1em;
@@ -30,9 +30,9 @@
     list-style: none;
 }
 
-    #page li.active {
-        border: 1px solid #209ec7;
-    }
+#page li.active {
+    border: 1px solid #209ec7;
+}
 #dataTable {
 table-layout:fixed;
 /*position:relative;*/
@@ -58,7 +58,7 @@ background-color:#98C8F4 !important;
     border-collapse:collapse;
     text-wrap:none;
     white-space:nowrap;
-    left: expression(this.parentElement.offsetParent.parentElement.scrollLeft);
+    /* left: expression(this.parentElement.offsetParent.parentElement.scrollLeft); */
     position: relative; z-index: 9998; 
     
 }
@@ -111,9 +111,25 @@ span.circleNum span{
     margin-bottom: 5px;
 }
 #headDiv input {
-width:40px;
+width:80px;
 border-radius:5px;
+border:1px solid #ccc;
+height:20px;
+
 }
 #headDiv span {
 margin-left:30px;
+}
+#headDiv button{
+    margin-left:30px;
+    padding: 5px 10px;
+    background-color: #fff;
+    border:1px solid #ccc;
+    border-radius: 5px;
+    
+}
+#headDiv button:hover{
+    color:#1B9AF7;
+    border-color: #1B9AF7;
+    cursor: pointer;
 }

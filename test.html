@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="DataTables_jy.js"></script>
+    <link rel="stylesheet" href="dataTables_jy.css">
+    <style>
+        #wrapper{
+            border-radius: 10px;
+            padding: 10px;
+            border:1px solid #ccc;
+
+        }
+        #tableDiv{
+            overflow: scroll;
+            height: 500px;
+        }
+        #mao{
+            clear: both;
+        }
+        #headDiv{
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="zzz">
+       
+    </div>
+</body>
+<script>
+    //产生json数据
+    function createJson(num){
+        var cols=['col1','col2','col3','col4','col5','col6','col7','col8','col9','col10','col11','col12'];
+        var array=[];
+        
+        for(var i=0;i<num;i++){
+            var obj={};
+            for(var j=0;j<cols.length;j++){
+                if(j==0){
+                   
+                    obj[cols[j]]=parseInt(i/10)+"----"+parseInt(i/10);            
+                     }else{
+                    obj[cols[j]]=i+"-"+j+"-"+i;
+
+                }
+            }
+            array[i]=obj;
+
+        }
+        return array;
+
+    }
+
+    window.onload=function(){
+        var zzz=document.getElementById("zzz");
+        var o_data=createJson(10000);
+        console.log(o_data);
+        DataTables_jy.setting={
+            data:o_data,
+            pagesize:100,
+            keycol:1000,
+            KeyWord:"col1",
+            isDetailMarge:true
+        }
+        DataTables_jy.init();
+        zzz.appendChild(DataTables_jy.createWrapper());
+    }
+
+    function ChangeNum(that){
+       
+        
+        DataTables_jy.updateTable(that.value);
+        
+    }
+</script>
+</html>

@@ -12,7 +12,9 @@
     var DataTables_jy={
      defaultsetting:{
          data:"",
-         r_Data:"",
+         search_data:"",//搜索到的数据
+         isSearching:false,//是否属于筛选状态
+         fatherArray:[],
          width:2260,
          range:5,        //分页左右显示范围
          table:"",
@@ -52,7 +54,8 @@
          },
          Print: {
              title:[]
-         }
+         },
+         isDetailMarge:false//是否合并明细
          
      },
      setting:{
@@ -84,6 +87,11 @@
         input_Search.type = "text";
         input_Search.onkeyup=function(){that.updateTableData(this.value)};
         headDiv.appendChild(input_Search);
+        // 打印
+        var print_button = document.createElement("button");
+        print_button.innerHTML="打 印";
+        headDiv.appendChild(print_button);
+        print_button.onclick=function(){that.CreataPrintTable()}
         
         wrapperDiv.appendChild(headDiv);
         var tableDiv = document.createElement("div");
@@ -104,9 +112,15 @@
         return wrapperDiv;
      },
      createUl:function(o_length){    //添加分页列表
- 
-         
-         var length =o_length|| window.Math.ceil(i_data.length / this.defaultsetting.pagesize);
+         var datalength=0;
+         if(this.defaultsetting.isDetailMarge){
+            datalength=this.defaultsetting.fatherArray.length;
+         }else if(this.defaultsetting.isSearching){
+            datalength=this.defaultsetting.search_data.length;
+         }else{
+            datalength=this.defaultsetting.data.length;
+         }
+         var length =o_length|| window.Math.ceil(datalength/ this.defaultsetting.pagesize);
          !this.defaultsetting.ul&&(this.defaultsetting.ul=document.createElement("ul"))
          var ul=this.defaultsetting.ul;
          ul.id="page";
@@ -322,16 +336,21 @@
        
      },
      switchPage: function (pageNum, table, pagesize, FixedCol,data) {   //创建表体
-    
+
          (pageNum < 1 || !pageNum) && (pageNum = 1);
          var tbody = table.getElementsByTagName("tbody");
          //清空table除了标题行的内容
 
          tbody.length&&table.removeChild(tbody[0]);
          tbody=document.createElement("tbody");
-         
+         var nowdata="";
          //console.time('耗时:');
-         this.Addtr(parseInt((pageNum - 1) * pagesize),parseInt(pagesize),tbody,data||this.defaultsetting.data)
+         if(this.defaultsetting.isSearching){
+            nowdata=data||this.defaultsetting.search_data;
+         }else{
+            nowdata=data||this.defaultsetting.data;
+         }
+         this.Addtr(parseInt((pageNum - 1) * pagesize),parseInt(pagesize),tbody,nowdata)
 
          //console.timeEnd('耗时:');
          
@@ -373,11 +392,21 @@
            
      },
      Addtr: function (start, num, tbody,o_data) {//增加tr数目
-    
          var oldrecord = "";//上一条数据
          var sownum=0;//隐藏行数
-         i_data = o_data||this.defaultsetting.data;
-         for (var i = start;  i < start+num; i++) {
+         var i_data
+         if(this.defaultsetting.isSearching){
+            i_data = o_data||this.defaultsetting.search_data;
+         }else{
+            i_data = o_data||this.defaultsetting.data;
+         }
+         if(this.defaultsetting.isDetailMarge){
+         var i_start=this.defaultsetting.fatherArray[start];
+         }else{
+             i_start=start;
+         }
+         
+         for (var i = i_start;  i < i_start+num; i++) {
              if ((i + sownum) >= i_data.length) {
                 break;
             }
@@ -485,7 +514,6 @@
      init:function(){
        
          this.defaultsetting=extendObj(this.defaultsetting,this.setting);
-         this.defaultsetting.data=this.defaultsetting.r_data;
          if (!this.defaultsetting.theadMeaasge.headStr && this.defaultsetting.data) {
              var str = "";
              var z = 0;
@@ -515,22 +543,29 @@
              }
              this.defaultsetting.showDetail = arr;
          }
+         
+         if(this.defaultsetting.isDetailMarge){
          var keyword=this.defaultsetting.KeyWord||this.defaultsetting.data[0][this.defaultsetting.data.keys[0]];
          this.defaultsetting.KeyWord=keyword;
          this.defaultsetting.data=shellSort(this.defaultsetting.data,keyword);
          var oldkey=this.defaultsetting.data[0][keyword];
          var l_num=0;
+         this.defaultsetting.fatherArray.push(l_num);
          for(var i=1;i<this.defaultsetting.data.length;i++)
          {
              var newkey=this.defaultsetting.data[i][keyword];
              if(oldkey==newkey){
                  this.defaultsetting.data[l_num]["dataTable-type"]="FatherItem";
                  this.defaultsetting.data[i]["dataTable-type"]="SonItemFor"+oldkey;
+                 
              }else{
                  oldkey=this.defaultsetting.data[i][keyword];
                  l_num=i;
+                 this.defaultsetting.fatherArray.push(l_num);
              }
          }
+        }
+        
      },
      getSummary: function () {//合计
 
@@ -603,28 +638,51 @@
        
      },
      updateTableData: function (searchText) {//筛选内容
-        
-         var oldData=this.defaultsetting.r_data;
-         this.defaultsetting.data = [];
+        if(searchText){
+         this.defaultsetting.fatherArray=[];
+         this.defaultsetting.isSearching=true;
+         var oldData=this.defaultsetting.data;
+         this.defaultsetting.search_data = [];
          for (var i = 0; i < oldData.length; i++) {
              for (var r in oldData[i]) {
                  if (oldData[i][r].toUpperCase().indexOf(searchText.toUpperCase()) > -1)
                  {
-                    this.defaultsetting.data.push(oldData[i]);
+                    oldData[i]["dataTable-type"]&&(oldData[i]["dataTable-type"]="")
+                    this.defaultsetting.search_data.push(oldData[i]);
                      break;
                  }
              }
          }
+         if(this.defaultsetting.isDetailMarge){
+         var keyword=this.defaultsetting.KeyWord||this.defaultsetting.data[0][this.defaultsetting.data.keys[0]];
+         var oldkey=this.defaultsetting.search_data[0][keyword];
+         var l_num=0;
+         this.defaultsetting.fatherArray.push(l_num);
+         for(var i=1;i<this.defaultsetting.search_data.length;i++)
+         {
+            
+             var newkey=this.defaultsetting.search_data[i][keyword];
+             if(oldkey==newkey){
+                 this.defaultsetting.search_data[l_num]["dataTable-type"]="FatherItem";
+                 this.defaultsetting.search_data[i]["dataTable-type"]="SonItemFor"+oldkey;
+                 this.defaultsetting.active_length--;
+             }else{
+                 oldkey=this.defaultsetting.search_data[i][keyword];
+                 l_num=i;
+                 this.defaultsetting.fatherArray.push(l_num);
+             }
+         }
+        }
          this.defaultsetting.ul.innerHTML="";
-         var ul=this.createUl(window.Math.ceil(this.defaultsetting.data.length / this.defaultsetting.pagesize));
+         var ul=this.createUl();
          var lilist=ul.getElementsByTagName("li");
             // for (var i = 0; i < lilist.length; i++) {
             //     if (lilist[i].innerHTML == pageNo) {
             //         lilist[i].click();
             //     }
             // }
-         this.switchPage(0, this.defaultsetting.table,  this.defaultsetting.pagesize, this.defaultsetting.FixedCol, this.defaultsetting.data);
-
+         this.switchPage(0, this.defaultsetting.table,  this.defaultsetting.pagesize, this.defaultsetting.FixedCol, this.defaultsetting.search_data);
+        }
      },
      CreataPrintTable: function () {
         var print = this.defaultsetting.Print;
@@ -662,6 +720,7 @@
                 printTable.appendChild(tr);
             
         }
+        if(this.defaultsetting.Print&&this.defaultsetting.Print.length>0){
         for (var k = print.Title.length - 1; k >= 0 ; k--) {
             var tr = document.createElement("tr");
             var td = document.createElement("td");
@@ -682,6 +741,7 @@
             
         }
         cloneThead.insertBefore(tr, cloneThead.firstChild);
+    }
         div.appendChild(printTable);
         var oWin = window.open("", "_blank");
         oWin.document.write(div.innerHTML);
