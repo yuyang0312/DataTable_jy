@@ -57,14 +57,17 @@
 
     window.onload=function(){
         var zzz=document.getElementById("zzz");
-        var o_data=createJson(10000);
+        var o_data=createJson(100);
         console.log(o_data);
         DataTables_jy.setting={
             data:o_data,
             pagesize:100,
             keycol:1000,
             KeyWord:"col1",
-            isDetailMarge:true
+            // isDetailMarge:true,
+            Print:{
+                spanCols:["col1"]
+            }
         }
         DataTables_jy.init();
         zzz.appendChild(DataTables_jy.createWrapper());

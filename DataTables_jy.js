@@ -15,7 +15,7 @@
          search_data:"",//搜索到的数据
          isSearching:false,//是否属于筛选状态
          fatherArray:[],
-         width:2260,
+         width:800,
          range:5,        //分页左右显示范围
          table:"",
          ul: "",
@@ -53,7 +53,11 @@
             
          },
          Print: {
-             title:[]
+             Title: [],
+             spanCols:[],//要跨行的列
+             notshowCol: [],
+             Width: [],
+             Style:[]
          },
          isDetailMarge:false//是否合并明细
          
@@ -95,20 +99,22 @@
         
         wrapperDiv.appendChild(headDiv);
         var tableDiv = document.createElement("div");
-        tableDiv.id="tableDiv";
+        tableDiv.id = "tableDiv";
+        tableDiv.style.width = document.body.offsetWidth-300;
         var ulDiv=document.createElement("div");
-        ulDiv.id="ulDiv";
+        ulDiv.id = "ulDiv";
         var maoDiv=document.createElement("div");
         maoDiv.id="mao";
         var table=this.createTable();
-        var Ul=this.createUl();
+        var Ul = this.createUl();
+        
         tableDiv.appendChild(table);
         ulDiv.appendChild(Ul);
         input_Change.onchange = function () { that.updateTableRows(this.value, getByClassName(Ul, "active")[0].innerHTML) };
         
         wrapperDiv.appendChild(tableDiv);
         wrapperDiv.appendChild(ulDiv);
-        wrapperDiv.appendChild(maoDiv);
+        ulDiv.appendChild(maoDiv);
         return wrapperDiv;
      },
      createUl:function(o_length){    //添加分页列表
@@ -255,7 +261,7 @@
          !this.defaultsetting.table&&(this.defaultsetting.table=document.createElement("table"));
          var table = this.defaultsetting.table;
          table.id = "dataTable";
-         table.style.width = this.defaultsetting.width+"px"; 
+         //table.style.width = this.defaultsetting.width+"px"; 
          var thead=this.createThead();
 
          table.appendChild(thead);//表头
@@ -462,7 +468,6 @@
 
                      var td = document.createElement("td");
                      td.innerHTML = nowdata[tdData];
-                     td.style.height = "25px";
                      if (t == this.defaultsetting.keycol) {
                          td.style.display = "none";
                          td.setAttribute("data-keyWord", nowdata[tdData]);
@@ -688,67 +693,121 @@
         var print = this.defaultsetting.Print;
         var div = document.createElement("div");
         var thead = document.getElementById("dataTable").firstChild;
-        var data = this.defaultsetting.data;
-        
+        var data = "";
+        if (this.defaultsetting.isSearching) {
+            data = this.defaultsetting.search_data;
+        } else {
+            data = this.defaultsetting.data;
+        }
+        var Print = this.defaultsetting.Print;
+        var ColObject = {};
+        var oldArray = new Array(Print.spanCols.length);
+        var CountArray = [];//计数
+        for (var p = 0; p < Print.spanCols.length; p++) {
+            ColObject[Print.spanCols[p]] = [1];
+            CountArray.push(0);
+        }
+
+
+        for (var k = 0; k < data.length; k++) {
+            for (var l = 0; l < Print.spanCols.length; l++) {
+                if (oldArray[l] == data[k][Print.spanCols[l]]) {
+                    if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
+                    ColObject[Print.spanCols[l]][CountArray[l]]++;
+                    
+                } else {
+                    oldArray[l] = data[k][Print.spanCols[l]];
+                    k > 0 && CountArray[l]++;
+                    if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
+
+                }
+            }
+        }
+        //表头
         var cloneThead = thead.cloneNode(true);
         var printTable = document.createElement("table");
-       
+        var SpanCount = 0;//计数 
+        var isRowspanCol = true;//是否为跨行列
         var theadtd = cloneThead.getElementsByTagName("td");
         for (var j = 0; j < theadtd.length; j++) {
             theadtd[j].style.emptyCells = "show";
             theadtd[j].style.border = "1px solid #000";
+            theadtd[j].style.textAlign = "center";
         }
-        printTable.style.width = "1000px";
+
         printTable.style.borderCollapse = "collapse";
         printTable.style.tableLayout = "fixed";
         printTable.appendChild(cloneThead);
         for (var i = 0; i < data.length; i++) {
-            
-                var tr = document.createElement("tr");
-                var t = 0;
-                for (var text in data[i]) {
-                    if (t != 0) {
-                       
-                        var td = document.createElement("td");
-                        td.innerHTML = data[i][text];
-                        td.style.emptyCells = "show";
-                        td.style.border = "1px solid #000";
-                        tr.appendChild(td);
-                    }
-                    t++;
-                }
-                printTable.appendChild(tr);
-            
-        }
-        if(this.defaultsetting.Print&&this.defaultsetting.Print.length>0){
-        for (var k = print.Title.length - 1; k >= 0 ; k--) {
+
             var tr = document.createElement("tr");
-            var td = document.createElement("td");
-            td.setAttribute("colSpan", 17);
-            td.innerHTML = print.Title[k];
-            td.style.cssText = print.Style[k];
-            td.setAttribute("style", print.Style[k]);
-            tr.appendChild(td);
+            var t = 0;
+            for (var text in data[i]) {
+                if (contains(Print.notshowCol, text) == -1) {
+
+                    var td = document.createElement("td");
+                    td.innerHTML = data[i][text];
+                    td.style.emptyCells = "show";
+                    td.style.border = "1px solid #000";
+                    td.style.textAlign = "center";
+                    if (contains(Print.spanCols, text) > -1) {
+                        if (isRowspanCol) {
+                            
+                            td.rowSpan = ColObject[text][SpanCount]--;
+                            isRowspanCol = false;
+                            tr.appendChild(td);
+                            if (ColObject[text][SpanCount] == 0) {
+                                isRowspanCol = true;
+                                SpanCount++;
+                            }
+                        } else {
+                            if (--ColObject[text][SpanCount] == 0) {
+                               
+                                isRowspanCol = true;
+                                SpanCount++;
+                            }
+                        }
+                        continue;
+                    }
+                    tr.appendChild(td);
+                }
+                t++;
+            }
+            
+
+            printTable.appendChild(tr);
+
+        }
+       
+        if (Print.Title) {
+            for (var k = print.Title.length - 1; k >= 0 ; k--) {
+                var tr = document.createElement("tr");
+                var td = document.createElement("td");
+                td.setAttribute("colSpan", Print.Width.length);
+                td.innerHTML = print.Title[k];
+                td.style.cssText = print.Style&&print.Style[k] || "";
+                td.setAttribute("style", print.Style && print.Style[k] || "");
+                tr.appendChild(td);
+                cloneThead.insertBefore(tr, cloneThead.firstChild);
+            }
+            var tr = document.createElement('tr');
+            for (var k = 0  ; k < print.Width.length; k++) {
+                var td = document.createElement("td");
+                td.style.height = "0px";
+                td.style.border = "none";
+                td.style.width = print.Width[k];
+                tr.appendChild(td);
+
+            }
             cloneThead.insertBefore(tr, cloneThead.firstChild);
         }
-        var tr = document.createElement('tr');
-        for (var k =0  ; k < print.Width.length; k++) {
-            var td = document.createElement("td");
-            td.style.height = "0px";
-            td.style.border = "none";
-            td.style.width = print.Width[k];
-            tr.appendChild(td);
-            
-        }
-        cloneThead.insertBefore(tr, cloneThead.firstChild);
-    }
         div.appendChild(printTable);
         var oWin = window.open("", "_blank");
         oWin.document.write(div.innerHTML);
 
         oWin.focus();
         oWin.document.close();
-     }
+    }
  
  
  
