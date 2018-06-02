@@ -1,24 +1,18 @@
 (function(window){
    
-    var map = Array.prototype.map ? function(a,f){ return a.map(f)} : function(a,f){  
-        var results = [];  
-        for(var i = 0; i < a.length; i ++){  
-            if(i in a){  
-                results[i] = f.call(null,a[i],i,a);  
-            }  
-        }  return results;  
-    }  
 
     var DataTables_jy={
      defaultsetting:{
          data:"",
          search_data:"",//搜索到的数据
-         isSearching:false,//是否属于筛选状态
+         isSearching: false,//是否属于筛选状态
+         sqlString:"",//Ajax要执行语句
          fatherArray:[],
-         width:800,
+         width: '2800px',
          range:5,        //分页左右显示范围
          table:"",
          ul: "",
+         ulLength:-1,//ul长度
          language: {
              head: "首页",
              tail:"尾页",
@@ -59,8 +53,8 @@
              Width: [],
              Style:[]
          },
-         isDetailMarge:false//是否合并明细
-         
+         isDetailMarge:false,//是否合并明细
+         printDiv:""//打印导出
      },
      setting:{
 
@@ -71,6 +65,7 @@
 
         wrapperDiv.innerHTML = "<div></div>";
         wrapperDiv.style.textAlign = "left";
+        //wrapperDiv.style.width = (document.body.offsetWidth - 180) + "px";
         var headDiv = document.createElement("div");
         //顶部div
         headDiv.id = "headDiv";
@@ -92,14 +87,23 @@
         input_Search.onkeyup=function(){that.updateTableData(this.value)};
         headDiv.appendChild(input_Search);
         // 打印
-        var print_button = document.createElement("button");
-        print_button.innerHTML="打 印";
+        var print_button = document.createElement("img");
+        print_button.src = "/web/images/Print.png";
         headDiv.appendChild(print_button);
-        print_button.onclick=function(){that.CreataPrintTable()}
+        print_button.title = "打印";
+        print_button.onclick = function () { that.Print() }
+
+        //导出
+        var ExcelOut_button = document.createElement("img");
+        ExcelOut_button.src = "/web/images/ExcelOut.png";
+        headDiv.appendChild(ExcelOut_button);
+        ExcelOut_button.title = "导出";
+        ExcelOut_button.onclick = function () { that.ExcelOut() }
         
         wrapperDiv.appendChild(headDiv);
         var tableDiv = document.createElement("div");
         tableDiv.id = "tableDiv";
+        
         tableDiv.style.width = document.body.offsetWidth-300;
         var ulDiv=document.createElement("div");
         ulDiv.id = "ulDiv";
@@ -109,8 +113,25 @@
         var Ul = this.createUl();
         
         tableDiv.appendChild(table);
+        tableDiv.onscroll = function () {
+            
+            var divSrocllTop = this.scrollTop;
+            var divScrollHeight = this.scrollHeight;
+            var divClientHeigth = this.clientHeight;
+            if (divSrocllTop > (divScrollHeight - divClientHeigth) / 2) {
+                //that.Addtr(100,that.defaultsetting.pagesize,table.getElementsByTagName("tbody"));
+
+            }
+        }
         ulDiv.appendChild(Ul);
         input_Change.onchange = function () { that.updateTableRows(this.value, getByClassName(Ul, "active")[0].innerHTML) };
+
+         //点击选择
+        var txtDGHiddenSelectItems = document.createElement("input");
+        txtDGHiddenSelectItems.id = "txtDGHiddenSelectItems";
+        txtDGHiddenSelectItems.type = "hidden";
+        wrapperDiv.appendChild(txtDGHiddenSelectItems);
+      
         
         wrapperDiv.appendChild(tableDiv);
         wrapperDiv.appendChild(ulDiv);
@@ -118,13 +139,12 @@
         return wrapperDiv;
      },
      createUl:function(o_length){    //添加分页列表
-         var datalength=0;
-         if(this.defaultsetting.isDetailMarge){
-            datalength=this.defaultsetting.fatherArray.length;
-         }else if(this.defaultsetting.isSearching){
-            datalength=this.defaultsetting.search_data.length;
-         }else{
-            datalength=this.defaultsetting.data.length;
+         var datalength = 0;
+
+         if (this.defaultsetting.ulLength > -1) {
+             datalength = this.defaultsetting.ulLength;
+         } else {
+             datalength = this.defaultsetting.data.length;
          }
          var length =o_length|| window.Math.ceil(datalength/ this.defaultsetting.pagesize);
          !this.defaultsetting.ul&&(this.defaultsetting.ul=document.createElement("ul"))
@@ -253,6 +273,7 @@
                      this.className = "active";
                      othat.switchPage(this.innerHTML,othat.defaultsetting.table,othat.defaultsetting.pagesize,othat.defaultsetting.FixedCol);
                  }
+                 
              }
          }
          return ul;
@@ -261,7 +282,7 @@
          !this.defaultsetting.table&&(this.defaultsetting.table=document.createElement("table"));
          var table = this.defaultsetting.table;
          table.id = "dataTable";
-         //table.style.width = this.defaultsetting.width+"px"; 
+        // table.style.width = this.defaultsetting.width; 
          var thead=this.createThead();
 
          table.appendChild(thead);//表头
@@ -332,8 +353,8 @@
     
                     }
                 
-            
-            tr.appendChild(td);
+                if (td.innerHTML != "ColorColumn") tr.appendChild(td);
+           
         }
         thead.appendChild(tr);
     }
@@ -342,7 +363,7 @@
        
      },
      switchPage: function (pageNum, table, pagesize, FixedCol,data) {   //创建表体
-
+         //console.time('耗时');
          (pageNum < 1 || !pageNum) && (pageNum = 1);
          var tbody = table.getElementsByTagName("tbody");
          //清空table除了标题行的内容
@@ -350,15 +371,16 @@
          tbody.length&&table.removeChild(tbody[0]);
          tbody=document.createElement("tbody");
          var nowdata="";
-         //console.time('耗时:');
+         
          if(this.defaultsetting.isSearching){
             nowdata=data||this.defaultsetting.search_data;
          }else{
             nowdata=data||this.defaultsetting.data;
          }
+         
          this.Addtr(parseInt((pageNum - 1) * pagesize),parseInt(pagesize),tbody,nowdata)
 
-         //console.timeEnd('耗时:');
+    
          
          table.appendChild(tbody);
          var trlist = table.getElementsByTagName("tr");
@@ -392,8 +414,9 @@
              //alert(j + "--");
          }
          
-        
+         
          this.defaultsetting.summation && this.getSummary();
+         //console.timeEnd('耗时');
          
            
      },
@@ -426,8 +449,8 @@
              var nowdata = i_data[i + sownum];
              var tr = document.createElement("tr");
              AddClass(tr,c_name);
-             var ColorColunmn = nowdata["ColorColumn"];
-             ColorColunmn && (tr.style.color = this.defaultsetting.Color[ColorColunmn]);//变色
+             var ColorColumn = nowdata["ColorColumn"];
+             ColorColumn && (tr.style.color = this.defaultsetting.Color[ColorColumn]);//变色
              tr.tabIndex = i;
              var that = this;
              tr.onkeydown = function (e) {
@@ -440,6 +463,12 @@
                  td.innerHTML = i + 1;
 
                  tr.appendChild(td);
+             }
+             tr.ondblclick = function () {
+                 that.trdbclick(this);
+             }
+             tr.onclick = function () {
+                 trclick(this);
              }
              var array = this.defaultsetting.showDetail;
 
@@ -459,26 +488,22 @@
                  oldrecord = nowdata[subcol[0]];
                  tbody.appendChild(subtr);
              }
-
-
+             var that = this;
              for (var t = 0; t < array.length; t++) {
                  var tdData = array[t];
 
-                 if (tdData != "dataTable-type") {
+                 if (tdData != "dataTable-type" && tdData != "ColorColumn") {
 
                      var td = document.createElement("td");
-                     td.innerHTML = nowdata[tdData];
+                     //setInnerText(td, nowdata[tdData]);
+                     td.innerText = nowdata[tdData];
+                     
                      if (t == this.defaultsetting.keycol) {
                          td.style.display = "none";
                          td.setAttribute("data-keyWord", nowdata[tdData]);
                      }
                      tr.appendChild(td);
-                     tr.ondblclick = function () {
-                         trdbclick(this);
-                     }
-                     tr.onclick = function () {
-                         trclick(this);
-                     }
+                     
 
                  }
              }
@@ -569,7 +594,22 @@
                  this.defaultsetting.fatherArray.push(l_num);
              }
          }
-        }
+         this.defaultsetting.ulLength = this.defaultsetting.fatherArray.length;
+         }
+
+
+         //Ajax 请求
+         var sqlString = this.defaultsetting.sqlString;
+         var that = this;
+         if (sqlString) {
+             var Data = "sqlString=" + sqlString;
+             Ajax.post("DataTables.ashx", Data, function (data) {
+                 var totalData = eval("("+data+")");
+                 that.defaultsetting.data = totalData["Rows"];
+                 that.defaultsetting.sqlString = null;
+             })
+
+         }
         
      },
      getSummary: function () {//合计
@@ -636,6 +676,7 @@
             for (var i = 0; i < lilist.length; i++) {
                 if (lilist[i].innerHTML == pageNo) {
                     lilist[i].click();
+
                 }
             }
             
@@ -677,6 +718,7 @@
                  this.defaultsetting.fatherArray.push(l_num);
              }
          }
+         this.defaultsetting.ulLength = this.defaultsetting.fatherArray.length;
         }
          this.defaultsetting.ul.innerHTML="";
          var ul=this.createUl();
@@ -725,14 +767,17 @@
         }
         //表头
         var cloneThead = thead.cloneNode(true);
+        cloneThead.firstChild.removeChild(cloneThead.firstChild.firstChild);
         var printTable = document.createElement("table");
         var SpanCount = 0;//计数 
         var isRowspanCol = true;//是否为跨行列
         var theadtd = cloneThead.getElementsByTagName("td");
-        for (var j = 0; j < theadtd.length; j++) {
+        var thlength=theadtd.length;
+        for (var j = 0; j < thlength; j++) {
             theadtd[j].style.emptyCells = "show";
             theadtd[j].style.border = "1px solid #000";
             theadtd[j].style.textAlign = "center";
+            
         }
 
         printTable.style.borderCollapse = "collapse";
@@ -743,7 +788,7 @@
             var tr = document.createElement("tr");
             var t = 0;
             for (var text in data[i]) {
-                if (contains(Print.notshowCol, text) == -1) {
+                if (contains(this.defaultsetting.keycol, t) == -1) {
 
                     var td = document.createElement("td");
                     td.innerHTML = data[i][text];
@@ -801,13 +846,47 @@
             }
             cloneThead.insertBefore(tr, cloneThead.firstChild);
         }
-        div.appendChild(printTable);
-        var oWin = window.open("", "_blank");
-        oWin.document.write(div.innerHTML);
 
-        oWin.focus();
-        oWin.document.close();
-    }
+        div.appendChild(printTable);
+        this.defaultsetting.printDiv = div;
+        return div;
+        
+     },
+     Print: function () {
+         var div = this.defaultsetting.printDiv ||this.CreataPrintTable();
+         var oWin = window.open("", "_blank");
+         oWin.document.write(div.innerHTML);
+         oWin.focus();
+         oWin.document.close();
+     },
+     ExcelOut: function () {
+         var div = this.defaultsetting.printDiv || this.CreataPrintTable();
+         window.clipboardData.setData("Text", div.innerHTML);
+         try {
+             var ExApp = new ActiveXObject("Excel.Application")
+             var ExWBk = ExApp.workbooks.add()
+             var ExWSh = ExWBk.worksheets(1)
+             ExWSh.Columns("A:AE").ColumnWidth = 10; //设置宽度
+             ExApp.ActiveSheet.Rows.RowHeight = 25; //设置行高
+             ExApp.DisplayAlerts = false
+             ExApp.visible = true
+         }
+         catch (e) {
+             alert("您的电脑没有安装Microsoft Excel软件！")
+             return false
+         }
+         ExWBk.worksheets(1).PageSetup.LeftMargin = 1 / 0.035; //页边距 左2厘米  
+         ExWBk.worksheets(1).PageSetup.RightMargin = 1 / 0.035; //页边距 右3厘米，  
+         ExWBk.worksheets(1).PageSetup.TopMargin = 1 / 0.035; //页边距 上4厘米，  
+         ExWBk.worksheets(1).PageSetup.BottomMargin = 1 / 0.035; //页边距 下5厘米  
+         ExWBk.worksheets(1).PageSetup.HeaderMargin = 1 / 0.035; //页边距 页眉1厘米  
+         ExWBk.worksheets(1).PageSetup.FooterMargin = 1 / 0.035; //页边距 页脚2厘米 
+         ExWBk.worksheets(1).Paste;
+
+     },
+     trdbclick: function (ele) {
+         
+     }
  
  
  
@@ -941,37 +1020,37 @@ function arrRemove(array, val) {
     }
     return array;
 }
-//function trclick(that) {
+function trclick(that) {
 
-//    var Items = document.getElementById("txtDGHiddenSelectItems");
-//    if (Items) {
-//        var value = that.firstChild.getAttribute("data-keyWord") || "";
-//        var classname = that.className;
-//        //判断是添加选择还是取消选择
-//        if ((!classname || classname.indexOf("selectedtr") == -1)) {
-//            that.className = that.className + " selectedtr";
-//            if (Items.value == undefined || Items.value == null || Items.value == "") {
-//                Items.value = value;
-//            } else {
-//                var arr = Items.value.split("◆");
-//                if (contains(arr, value) == -1) {
-//                    arr.push(value);
-//                    Items.value = arr.join("◆");
-//                }
+    var Items = document.getElementById("txtDGHiddenSelectItems");
+    if (Items) {
+        var value = that.firstChild.getAttribute("data-keyWord") || "";
+        var classname = that.className;
+        //判断是添加选择还是取消选择
+        if ((!classname || classname.indexOf("selectedtr") == -1)) {
+            that.className = that.className + " selectedtr";
+            if (Items.value == undefined || Items.value == null || Items.value == "") {
+                Items.value = value;
+            } else {
+                var arr = Items.value.split("◆");
+                if (contains(arr, value) == -1) {
+                    arr.push(value);
+                    Items.value = arr.join("◆");
+                }
 
-//            }
-//        } else {
-//            that.className = that.className.replace("selectedtr", "");
-//            if (Items.value == undefined || Items.value == null || Items.value == "") {
-//            } else {
-//                var arr = Items.value.split("◆");
-//                arr = arrRemove(arr, value);
-//                Items.value = arr.join("◆");
-//            }
-//        }
-//    }
+            }
+        } else {
+            that.className = that.className.replace("selectedtr", "");
+            if (Items.value == undefined || Items.value == null || Items.value == "") {
+            } else {
+                var arr = Items.value.split("◆");
+                arr = arrRemove(arr, value);
+                Items.value = arr.join("◆");
+            }
+        }
+    }
 
-    //}
+    }
 function trkeyup(thetr, e, that,tbody) {//tr上下滚动
     
     var event = e || window.event;
@@ -1021,10 +1100,11 @@ function getInnerText(element) {
     return (typeof element.textContent == "string") ? element.textContent : element.innerText;
 }
 function setInnerText(element, text) {
-    if (typeof element.textContent == "string") {
-        element.textContent = text;
-    } else {
+    if (typeof element.innerText == "string") {
         element.innerText = text;
+       
+    } else {
+        element.textContent = text;
     }
 }
 
@@ -1129,7 +1209,32 @@ function AddClass(target,className){
 }
 
 
+var Ajax = {
+    get: function (url, fn) {
+        var obj = new XMLHttpRequest();  // XMLHttpRequest对象用于在后台与服务器交换数据          
+        obj.open('GET', url, true);
+        obj.onreadystatechange = function () {
+            if (obj.readyState == 4 && obj.status == 200 || obj.status == 304) { // readyState == 4说明请求已完成
+                fn.call(this, obj.responseText);  //从服务器获得数据
+                //console.log(obj);
+            }
+        };
+        obj.send();
+    },
+    post: function (url, data, fn) {         // datat应为'a=a1&b=b1'这种字符串格式，在jq里如果data为对象会自动将对象转成这种字符串格式
+        var obj = new XMLHttpRequest();
+        obj.open("POST", url, true);
+        obj.setRequestHeader("Content-type", "application/x-www-form-urlencoded");  // 添加http头，发送信息至服务器时内容编码类型
+        obj.onreadystatechange = function () {
+            if (obj.readyState == 4 && (obj.status == 200 || obj.status == 304)) {  // 304未修改
+                fn.call(this, obj.responseText);
+                //console.log(obj);
 
+            }
+        };
+        obj.send(data);
+    }
+}
 
 
  
