@@ -10,9 +10,14 @@
          fatherArray:[],
          width: '2800px',
          range:5,        //分页左右显示范围
-         table:"",
+         table: "",
+         tableDiv:"",
          ul: "",
-         ulLength:-1,//ul长度
+         add_length:40,//每次增加的长度
+         added_length: 40,//已增加长度
+         nowPageNum:1,
+         ulLength: -1,//ul长度
+         loading:"",
          language: {
              head: "首页",
              tail:"尾页",
@@ -33,7 +38,7 @@
          summation: "",
          Color: {
              "-1":"#000",
-             "2":"#FF0000",
+             "1":"#FF0000",
              "-2": "#00FFFF",
              "-3": "#00FF00",
              "-4":"#0000FF",
@@ -54,7 +59,8 @@
              Style:[]
          },
          isDetailMarge:false,//是否合并明细
-         printDiv:""//打印导出
+         printDiv: "",//打印导出
+         mode:""//模式
      },
      setting:{
 
@@ -99,8 +105,19 @@
         headDiv.appendChild(ExcelOut_button);
         ExcelOut_button.title = "导出";
         ExcelOut_button.onclick = function () { that.ExcelOut() }
-        
+
+         //正在加载
+        var loading = document.createElement("span");
+        //var dotting = document.createElement("span");
+        //dotting.className = "dotting";
+        loading.innerHTML = "数据加载中...";
+        loading.style.color = "red";
+        loading.id = "dt_loading";
+         //loading.appendChild(dotting);
+        if (this.defaultsetting.sqlString) headDiv.appendChild(loading);
+        this.defaultsetting.loading = loading;
         wrapperDiv.appendChild(headDiv);
+
         var tableDiv = document.createElement("div");
         tableDiv.id = "tableDiv";
         
@@ -109,19 +126,24 @@
         ulDiv.id = "ulDiv";
         var maoDiv=document.createElement("div");
         maoDiv.id="mao";
-        var table=this.createTable();
+        var table = this.createTable();
         var Ul = this.createUl();
-        
+        this.defaultsetting.tableDiv = tableDiv;
         tableDiv.appendChild(table);
         tableDiv.onscroll = function () {
-            
+            if (that.defaultsetting.added_length < (that.defaultsetting.pagesize * that.defaultsetting.nowPageNum))
+            {
+                
             var divSrocllTop = this.scrollTop;
             var divScrollHeight = this.scrollHeight;
             var divClientHeigth = this.clientHeight;
             if (divSrocllTop > (divScrollHeight - divClientHeigth) / 2) {
-                //that.Addtr(100,that.defaultsetting.pagesize,table.getElementsByTagName("tbody"));
-
+              var num = that.defaultsetting.add_length;
+              if (that.defaultsetting.added_length + num > (that.defaultsetting.pagesize * that.defaultsetting.nowPageNum)) num = that.defaultsetting.pagesize * that.defaultsetting.nowPageNum - that.defaultsetting.added_length;
+              that.Addtr(that.defaultsetting.added_length, num, table.lastChild);
+              that.defaultsetting.added_length+=num;
             }
+        }
         }
         ulDiv.appendChild(Ul);
         input_Change.onchange = function () { that.updateTableRows(this.value, getByClassName(Ul, "active")[0].innerHTML) };
@@ -302,7 +324,7 @@
                 td.innerHTML="序号";
                 tr.appendChild(td);
             }
-            AddClass(tr,"head");
+            addClass(tr,"head");
             for(var j=0;j<arr.length;j++)
             {
                 var arr2 = arr[j].split(theadMeaasge.headSplit[2]);
@@ -320,6 +342,9 @@
                     }
                    
                 }
+                var FixedCol = this.defaultsetting.FixedCol;
+                if (contains(FixedCol, td.getAttribute("data-sort-key")) > -1) addClass(td, "FixedDataColumn");
+                //if (FixedCol[FixedCol.length - 1] == td.getAttribute("data-sort-key")) td.style.borderRightColor = "#000";
                 if (arr2[5]=="none") {
                     td.style.display = "none";
                 }
@@ -362,12 +387,14 @@
     
        
      },
-     switchPage: function (pageNum, table, pagesize, FixedCol,data) {   //创建表体
+     switchPage: function (pageNum, table, pagesize, FixedCol, data) {   //创建表体
+       
          //console.time('耗时');
          (pageNum < 1 || !pageNum) && (pageNum = 1);
+         this.defaultsetting.nowPageNum = pageNum;
          var tbody = table.getElementsByTagName("tbody");
          //清空table除了标题行的内容
-
+         this.defaultsetting.tableDiv.scrollTop = "0";
          tbody.length&&table.removeChild(tbody[0]);
          tbody=document.createElement("tbody");
          var nowdata="";
@@ -377,42 +404,43 @@
          }else{
             nowdata=data||this.defaultsetting.data;
          }
+         var length=this.defaultsetting.pagesize;
+         if(this.defaultsetting.pagesize>this.defaultsetting.add_length) length=this.defaultsetting.add_length;
+         this.Addtr(parseInt((pageNum - 1) * pagesize),length,tbody,nowdata)
+         this.defaultsetting.added_length = parseInt((pageNum - 1) * pagesize)+length;
          
-         this.Addtr(parseInt((pageNum - 1) * pagesize),parseInt(pagesize),tbody,nowdata)
-
-    
          
          table.appendChild(tbody);
          var trlist = table.getElementsByTagName("tr");
          var length = trlist.length;
          //固定行,防止跨行产生的错误
-         var rowspapnum = [];
-         var F_Flag = true;
-         var nk = FixedCol.length;
-         for (var j = 0; j < length; j++) {  
-             var tdlist = trlist[j].getElementsByTagName("td");
+         //var rowspapnum = [];
+         //var F_Flag = true;
+         //var nk = FixedCol.length;
+         //for (var j = 0; j < length; j++) {  
+         //    var tdlist = trlist[j].getElementsByTagName("td");
              
                  
-            for (var k = 0; k < FixedCol.length&&k<nk; k++) {
-                AddClass(tdlist[FixedCol[k]],"FixedDataColumn");
-                rowspapnum[k] = tdlist[FixedCol[k]].getAttribute("rowSpan");
-                if (k == FixedCol.length-1||k==nk-1) {
-                    tdlist[FixedCol[k]].style.borderRight = "1px solid #000";
-                }     
+         //   for (var k = 0; k < FixedCol.length&&k<nk; k++) {
+         //       addClass(tdlist[FixedCol[k]],"FixedDataColumn");
+         //       rowspapnum[k] = tdlist[FixedCol[k]].getAttribute("rowSpan");
+         //       if (k == FixedCol.length-1||k==nk-1) {
+         //           tdlist[FixedCol[k]].style.borderRight = "1px solid #000";
+         //       }     
 
-            }
-            nk = FixedCol.length;
+         //   }
+         //   nk = FixedCol.length;
             
 
-             for (var h = 0; h < rowspapnum.length; h++) {
-                 if (rowspapnum[h] > 1) {
-                     nk--;
-                     rowspapnum[h]--;
-                 }
-             }
+         //    for (var h = 0; h < rowspapnum.length; h++) {
+         //        if (rowspapnum[h] > 1) {
+         //            nk--;
+         //            rowspapnum[h]--;
+         //        }
+         //    }
                 
-             //alert(j + "--");
-         }
+         //    //alert(j + "--");
+         //}
          
          
          this.defaultsetting.summation && this.getSummary();
@@ -420,7 +448,7 @@
          
            
      },
-     Addtr: function (start, num, tbody,o_data) {//增加tr数目
+     Addtr: function (start, num, tbody, o_data) {//增加tr数目
          var oldrecord = "";//上一条数据
          var sownum=0;//隐藏行数
          var i_data
@@ -448,16 +476,19 @@
          
              var nowdata = i_data[i + sownum];
              var tr = document.createElement("tr");
-             AddClass(tr,c_name);
+             addClass(tr,c_name);
              var ColorColumn = nowdata["ColorColumn"];
              ColorColumn && (tr.style.color = this.defaultsetting.Color[ColorColumn]);//变色
              tr.tabIndex = i;
              var that = this;
-             tr.onkeydown = function (e) {
-                 var event = e || window.event;
-                 stopBubble(event);
+            
+             if (this.defaultsetting.mode == "1") {
+                 tr.onkeydown = function (e) {
+                     var event = e || window.event;
+                     stopBubble(event);
+                 }
+                 tr.onkeyup = function (e) { trkeyup(this, e, that, tbody) };
              }
-             tr.onkeyup = function (e) { trkeyup(this, e, that, tbody) };
              if (this.defaultsetting.orderCol) {//序号列
                  var td = document.createElement("td");
                  td.innerHTML = i + 1;
@@ -489,12 +520,18 @@
                  tbody.appendChild(subtr);
              }
              var that = this;
+             //固定行
+             var FixedCol = this.defaultsetting.FixedCol;
+
+             
              for (var t = 0; t < array.length; t++) {
                  var tdData = array[t];
 
                  if (tdData != "dataTable-type" && tdData != "ColorColumn") {
 
                      var td = document.createElement("td");
+                     if (contains(FixedCol, tdData) > -1) addClass(td, "FixedDataColumn");
+                     //if (FixedCol[FixedCol.length - 1] == tdData) td.style.borderRightColor = "#000";
                      //setInnerText(td, nowdata[tdData]);
                      td.innerText = nowdata[tdData];
                      
@@ -510,7 +547,7 @@
              if (nowdata["dataTable-type"] == "FatherItem") {
 
                  var keyword = nowdata[this.defaultsetting.KeyWord];
-                 AddClass(tr,"FatherItem");
+                 addClass(tr,"FatherItem");
                  (function(keyword){tr.onclick = function () {
                     switchStatus("SonItemFor"+keyword);
                 }})(keyword)
@@ -530,8 +567,8 @@
                  
              }
              if (nowdata["dataTable-type"] == ("SonItemFor"+nowdata[this.defaultsetting.KeyWord])) {
-                AddClass(tr,nowdata["dataTable-type"]);
-                AddClass(tr,"SonItem");
+                addClass(tr,nowdata["dataTable-type"]);
+                addClass(tr,"SonItem");
                 tr.style.display = "none";
                 i--;
                 sownum++;
@@ -604,12 +641,15 @@
          if (sqlString) {
              var Data = "sqlString=" + sqlString;
              Ajax.post("DataTables.ashx", Data, function (data) {
-                 var totalData = eval("("+data+")");
+                 var totalData = eval("(" + data + ")");
                  that.defaultsetting.data = totalData["Rows"];
                  that.defaultsetting.sqlString = null;
+                 that.defaultsetting.loading = "";
+                 document.getElementById("dt_loading").innerHTML = "数据加载完成";
+                 document.getElementById("dt_loading").style.color = "green";
              })
 
-         }
+         } 
         
      },
      getSummary: function () {//合计
@@ -684,52 +724,65 @@
        
      },
      updateTableData: function (searchText) {//筛选内容
-        if(searchText){
-         this.defaultsetting.fatherArray=[];
-         this.defaultsetting.isSearching=true;
-         var oldData=this.defaultsetting.data;
-         this.defaultsetting.search_data = [];
-         for (var i = 0; i < oldData.length; i++) {
-             for (var r in oldData[i]) {
-                 if (oldData[i][r].toUpperCase().indexOf(searchText.toUpperCase()) > -1)
-                 {
-                    oldData[i]["dataTable-type"]&&(oldData[i]["dataTable-type"]="")
-                    this.defaultsetting.search_data.push(oldData[i]);
-                     break;
+         if (searchText) {
+             this.defaultsetting.fatherArray = [];
+             this.defaultsetting.isSearching = true;
+             var oldData = this.defaultsetting.data;
+             this.defaultsetting.search_data = [];
+             for (var i = 0; i < oldData.length; i++) {
+                 for (var r in oldData[i]) {
+                     if (oldData[i][r].toUpperCase().indexOf(searchText.toUpperCase()) > -1) {
+                         oldData[i]["dataTable-type"] && (oldData[i]["dataTable-type"] = "")
+                         this.defaultsetting.search_data.push(oldData[i]);
+                         break;
+                     }
                  }
              }
-         }
-         if(this.defaultsetting.isDetailMarge){
-         var keyword=this.defaultsetting.KeyWord||this.defaultsetting.data[0][this.defaultsetting.data.keys[0]];
-         var oldkey=this.defaultsetting.search_data[0][keyword];
-         var l_num=0;
-         this.defaultsetting.fatherArray.push(l_num);
-         for(var i=1;i<this.defaultsetting.search_data.length;i++)
-         {
-            
-             var newkey=this.defaultsetting.search_data[i][keyword];
-             if(oldkey==newkey){
-                 this.defaultsetting.search_data[l_num]["dataTable-type"]="FatherItem";
-                 this.defaultsetting.search_data[i]["dataTable-type"]="SonItemFor"+oldkey;
-                 this.defaultsetting.active_length--;
-             }else{
-                 oldkey=this.defaultsetting.search_data[i][keyword];
-                 l_num=i;
+             this.defaultsetting.ulLength = this.defaultsetting.search_data.length;
+             
+             if (this.defaultsetting.isDetailMarge) {
+                 var keyword = this.defaultsetting.KeyWord || this.defaultsetting.data[0][this.defaultsetting.data.keys[0]];
+                 var oldkey = this.defaultsetting.search_data[0][keyword];
+                 var l_num = 0;
                  this.defaultsetting.fatherArray.push(l_num);
+                 for (var i = 1; i < this.defaultsetting.search_data.length; i++) {
+
+                     var newkey = this.defaultsetting.search_data[i][keyword];
+                     if (oldkey == newkey) {
+                         this.defaultsetting.search_data[l_num]["dataTable-type"] = "FatherItem";
+                         this.defaultsetting.search_data[i]["dataTable-type"] = "SonItemFor" + oldkey;
+                         this.defaultsetting.active_length--;
+                     } else {
+                         oldkey = this.defaultsetting.search_data[i][keyword];
+                         l_num = i;
+                         this.defaultsetting.fatherArray.push(l_num);
+                     }
+                 }
+                 this.defaultsetting.ulLength = this.defaultsetting.fatherArray.length;
              }
+             this.defaultsetting.ul.innerHTML = "";
+             var ul = this.createUl();
+             var lilist = ul.getElementsByTagName("li");
+             // for (var i = 0; i < lilist.length; i++) {
+             //     if (lilist[i].innerHTML == pageNo) {
+             //         lilist[i].click();
+             //     }
+             // }
+             this.switchPage(0, this.defaultsetting.table, this.defaultsetting.pagesize, this.defaultsetting.FixedCol, this.defaultsetting.search_data);
+         } else {
+             this.defaultsetting.isSearching = false;
+             this.defaultsetting.ulLength = this.defaultsetting.data.length;
+             this.defaultsetting.ul.innerHTML = "";
+             var ul = this.createUl();
+             var lilist = ul.getElementsByTagName("li");
+             // for (var i = 0; i < lilist.length; i++) {
+             //     if (lilist[i].innerHTML == pageNo) {
+             //         lilist[i].click();
+             //     }
+             // }
+             this.switchPage(0, this.defaultsetting.table, this.defaultsetting.pagesize, this.defaultsetting.FixedCol, this.defaultsetting.data);
          }
-         this.defaultsetting.ulLength = this.defaultsetting.fatherArray.length;
-        }
-         this.defaultsetting.ul.innerHTML="";
-         var ul=this.createUl();
-         var lilist=ul.getElementsByTagName("li");
-            // for (var i = 0; i < lilist.length; i++) {
-            //     if (lilist[i].innerHTML == pageNo) {
-            //         lilist[i].click();
-            //     }
-            // }
-         this.switchPage(0, this.defaultsetting.table,  this.defaultsetting.pagesize, this.defaultsetting.FixedCol, this.defaultsetting.search_data);
-        }
+         
      },
      CreataPrintTable: function () {
         var print = this.defaultsetting.Print;
@@ -767,7 +820,7 @@
         }
         //表头
         var cloneThead = thead.cloneNode(true);
-        cloneThead.firstChild.removeChild(cloneThead.firstChild.firstChild);
+        //cloneThead.firstChild.removeChild(cloneThead.firstChild.firstChild);
         var printTable = document.createElement("table");
         var SpanCount = 0;//计数 
         var isRowspanCol = true;//是否为跨行列
@@ -892,10 +945,10 @@
  
     };
     window.DataTables_jy=DataTables_jy;
- function getByClassName(obj, cls) {
+ function getByClassName(obj, cls,Tag) {
      // obj目标元素，cls要获得的class名
  
-     var element = obj.getElementsByTagName('*');//将目标下的所有子元素获取到
+     var element = obj.getElementsByTagName(Tag||'*');//将目标下的所有子元素获取到
      var result = []; //定义一个数组，存放获得的classname = "cls" 的所有值
      for (var i = 0; i < element.length; i++) {
          var cn_array = element[i].className.split(" ");
@@ -1023,31 +1076,65 @@ function arrRemove(array, val) {
 function trclick(that) {
 
     var Items = document.getElementById("txtDGHiddenSelectItems");
+    var value = that.firstChild.getAttribute("data-keyWord") || "";
     if (Items) {
-        var value = that.firstChild.getAttribute("data-keyWord") || "";
-        var classname = that.className;
-        //判断是添加选择还是取消选择
-        if ((!classname || classname.indexOf("selectedtr") == -1)) {
-            that.className = that.className + " selectedtr";
-            if (Items.value == undefined || Items.value == null || Items.value == "") {
-                Items.value = value;
+        if (event.ctrlKey) {//ctrl+鼠标左键 多项选择
+            
+            var classname = that.className;
+            //判断是添加选择还是取消选择
+            if ((!classname || classname.indexOf("selectedtr") == -1)) {
+                addClass(that, "selectedtr")
+                if (Items.value == undefined || Items.value == null || Items.value == "") {
+                    Items.value = value;
+                } else {
+                    var arr = Items.value.split("◆");
+                    if (contains(arr, value) == -1) {
+                        arr.push(value);
+                        Items.value = arr.join("◆");
+                    }
+
+                }
             } else {
-                var arr = Items.value.split("◆");
-                if (contains(arr, value) == -1) {
-                    arr.push(value);
+                removeClass(that, "selectedtr");
+                if (Items.value == undefined || Items.value == null || Items.value == "") {
+                } else {
+                    var arr = Items.value.split("◆");
+                    arr = arrRemove(arr, value);
                     Items.value = arr.join("◆");
                 }
-
             }
-        } else {
-            that.className = that.className.replace("selectedtr", "");
-            if (Items.value == undefined || Items.value == null || Items.value == "") {
-            } else {
-                var arr = Items.value.split("◆");
-                arr = arrRemove(arr, value);
-                Items.value = arr.join("◆");
+        } else if (event.shiftKey) {
+            var tr1 = getByClassName(that.parentNode, "selectedtr", "tr");
+            var tr = tr1[0];
+            var length = tr1.length;
+            for (var i = 0; i < length; i++) {
+                removeClass(tr1[i], "selectedtr");
+            }
+            if (tr) {
+                var startIndex = tr.getAttribute("tabIndex") > that.getAttribute("tabIndex") ? that.getAttribute("tabIndex") : tr.getAttribute("tabIndex");
+                var endIndex = tr.getAttribute("tabIndex") > that.getAttribute("tabIndex") ? tr.getAttribute("tabIndex") : that.getAttribute("tabIndex");
+                var trlist = that.parentNode.getElementsByTagName("tr");
+                var newvalue=[];
+                for (var i = startIndex; i <= endIndex; i++) {
+                    addClass(trlist[i], "selectedtr");
+                    newvalue.push(trlist[i].firstChild.getAttribute("data-keyWord") || "");
+                }
+                Items.value = newvalue.join("◆");
+               
             }
         }
+        else {
+            var tr = getByClassName(that.parentNode, "selectedtr","tr");
+            var length = tr.length;
+            for (var i = 0; i < length; i++) {
+                removeClass(tr[i], "selectedtr");
+            }
+            addClass(that, "selectedtr");
+            Items.value = value;
+
+
+        }
+        stopBubble(event);
     }
 
     }
@@ -1190,23 +1277,21 @@ function stopBubble(e) {
         e.returnValue = false;
     }
     (e.returnValue && (e.returnValue = false)) || (e.preventDefault&&e.preventDefault());
-
 }
 
-function AddClass(target,className){
-    if(target){
-        if(target.className){
-    var cn_array=target.className.split(" ");
-    if(contains(cn_array,className)==-1){
-        cn_array.push(className);
-    }
-    target.className=(cn_array.join(" "));
-   
-    }else{
-        target.className=className;
-    }
-}
-}
+function hasClass( elements,cName ){ 
+    return !!elements.className.match( new RegExp( "(\\s|^)" + cName + "(\\s|$)") ); 
+}; 
+function addClass( elements,cName ){ 
+    if( !hasClass( elements,cName ) ){ 
+        elements.className += " " + cName; 
+    }; 
+}; 
+function removeClass( elements,cName ){ 
+    if( hasClass( elements,cName ) ){ 
+        elements.className = elements.className.replace( new RegExp( "(\\s|^)" + cName + "(\\s|$)" ), " " );
+    }; 
+};
 
 
 var Ajax = {

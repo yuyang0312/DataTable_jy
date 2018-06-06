@@ -8,13 +8,14 @@
        background-color: #98C8F4;
     text-align:center;
     border-collapse:collapse;
-    /* top: expression(this.parentElement.offsetParent.parentElement.scrollTop); */
-    /*position: relative; z-index:9999;*/
+    top: expression(this.parentElement.offsetParent.parentElement.scrollTop);
+    position: relative; z-index:9999;
     /*font-weight:bold;*/
     letter-spacing:0.1em;
     border-top:1px solid #ccc;
     padding:5px 0px;
     text-align:center;
+    white-space:nowrap;
 
 }
 
@@ -39,6 +40,7 @@
 /*position:relative;*/
 border-collapse: collapse;
 background-color:#ccc;
+width:100%;
 
 }
 #dataTable td {
@@ -55,22 +57,22 @@ background-color:#ccc;
     padding-right:3px;
 }
 .selectedtr {
-background-color:#98C8F4 !important;
+background-color:#0f7eae !important;
 }
 
  #dataTable .FixedDataColumn {
-    text-align:center;
+    text-align:left;
     border-collapse:collapse;
     text-wrap:none;
     white-space:nowrap;
-    /* left: expression(this.parentElement.offsetParent.parentElement.scrollLeft); */
+    left: expression(this.parentElement.offsetParent.parentElement.scrollLeft);
     position: relative; z-index: 9998; 
     
 }
   #dataTable  .head .FixedDataColumn {
 z-index:999999;
 }
-
+ 
 .oddrow{
     background-color: #EAF3FA;
 }
@@ -109,7 +111,8 @@ span.circleNum span{
 #tableDiv{
     overflow: scroll;
     height: 340px;
-      
+    /*z-index:10000;*/
+    position:relative;
 }
 #mao{
     clear: both;
@@ -144,4 +147,26 @@ margin-left:30px;
 overflow:hidden;
 zoom:1;
 /*height:50px;*/
+}
+/*加载的点*/
+   .dotting {
+    display: inline-block; min-width: 2px; min-height: 2px;
+    box-shadow: 2px 0 currentColor, 6px 0 currentColor, 10px 0 currentColor; 
+    -webkit-animation: dot 4s infinite step-start both;
+    animation: dot 4s infinite step-start both;
+    *zoom: expression(this.innerHTML = '...'); /* IE7 */
+}
+.dotting:before { content: '...'; } /* IE8 */
+.dotting::before { content: ''; }
+:root .dotting { margin-right: 8px; } /* IE9+,FF,CH,OP,SF */
+
+@-webkit-keyframes dot {
+    25% { box-shadow: none; }
+    50% { box-shadow: 2px 0 currentColor; }
+    75% { box-shadow: 2px 0 currentColor, 6px 0 currentColor; }
+}
+@keyframes dot {
+    25% { box-shadow: none; }
+    50% { box-shadow: 2px 0 currentColor; }
+    75% { box-shadow: 2px 0 currentColor, 6px 0 currentColor; }
 }
