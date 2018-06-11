@@ -40,7 +40,7 @@
              "-1":"#000",
              "1":"#FF0000",
              "-2": "#00FFFF",
-             "-3": "#00FF00",
+             "-3": "#009933",
              "-4":"#0000FF",
              "-5": "#FFA500"
 
@@ -80,6 +80,7 @@
         headDiv.innerHTML = "显示行数: ";
         var input_Change = document.createElement("input");
         input_Change.type = "text";
+        input_Change.value=getCookie("num")||this.defaultsetting.pagesize;
         input_Change.className = "headInput";
         var that = this;
         headDiv.appendChild(input_Change);
@@ -94,14 +95,14 @@
         headDiv.appendChild(input_Search);
         // 打印
         var print_button = document.createElement("img");
-        print_button.src = "/web/images/Print.png";
+        print_button.src = "/g2web/images/Print.png";
         headDiv.appendChild(print_button);
         print_button.title = "打印";
         print_button.onclick = function () { that.Print() }
 
         //导出
         var ExcelOut_button = document.createElement("img");
-        ExcelOut_button.src = "/web/images/ExcelOut.png";
+        ExcelOut_button.src = "/g2web/images/ExcelOut.png";
         headDiv.appendChild(ExcelOut_button);
         ExcelOut_button.title = "导出";
         ExcelOut_button.onclick = function () { that.ExcelOut() }
@@ -579,7 +580,7 @@
   
      },
      init:function(){
-       
+        
          this.defaultsetting=extendObj(this.defaultsetting,this.setting);
          if (!this.defaultsetting.theadMeaasge.headStr && this.defaultsetting.data) {
              var str = "";
@@ -602,7 +603,7 @@
                  Contont: ["innerHTML", "rowSpan", "colSpan", "data-sort-key", "width"]//各项信息
              };
          }
-         
+         this.defaultsetting.pagesize = getCookie("num") || this.defaultsetting.pagesize;
          if (!this.defaultsetting.showDetail&& this.defaultsetting.data) {
              var arr=[];
              for (var data in  this.defaultsetting.data[0]){
@@ -708,7 +709,8 @@
          }
      },
      updateTableRows: function (num, pageNo) {//改变显示行数
-        if(!isNaN(parseInt(num))){
+         if (!isNaN(parseInt(num))) {
+            setCookie("num",num,365);
             this.defaultsetting.pagesize=num;
             this.defaultsetting.ul.innerHTML="";
             var ul=this.createUl();
@@ -1320,6 +1322,40 @@ var Ajax = {
         obj.send(data);
     }
 }
+
+    //设置cookie
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + "; " + expires;
+}
+    //获取cookie
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1);
+        if (c.indexOf(name) != -1) return c.substring(name.length, c.length);
+    }
+    return "";
+}
+    //清除cookie  
+function clearCookie(name) {
+    setCookie(name, "", -1);
+}
+//function checkCookie() {
+//    var user = getCookie("username");
+//    if (user != "") {
+//        alert("Welcome again " + user);
+//    } else {
+//        user = prompt("Please enter your name:", "");
+//        if (user != "" && user != null) {
+//            setCookie("username", user, 365);
+//        }
+//    }
+//}
 
 
  

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="DataTables_jy.js"></script>
+    <link rel="stylesheet" href="dataTables_jy2.css">
+    <style>
+        body{
+            background-color: #F8F8F8;
+        }
+        #wrapper{
+            width:95%;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            padding: 10px 20px;
+            background-color: #FFF;
+        }
+        #title{
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+
+        }
+        #tablist{
+            margin-top:20px;
+            color:white;
+            height: 130px;
+        }
+        .tab{
+            border:1px solid #ccc;
+            margin-right:10px;
+            border-radius: 10px;
+            width:209px;
+            height:104px;
+            padding: 10px;
+            position: relative;
+            float:left;
+           
+        }
+        .carea{
+            padding-bottom: 4px;
+            border-bottom: 1px solid #ccc;
+            height: 70px;
+            
+        }
+        .uarea{
+            margin-bottom:0px;
+            vertical-align: bottom;
+            
+        }
+        .uarea a{
+            position: absolute;
+            bottom: 10px;
+        }
+        .uarea a.toright{
+            right:10px;
+        }
+        .s_blue{
+            background-color: #578EBE;
+        }
+        .img{
+            height:50px;
+            width:60px;
+            float:left;
+            border:1px solid #fff;
+        }
+        .content{
+            float: right;
+        }
+        .num{
+            font-size: 18px;
+        }
+
+        .toleft{
+            float: left;
+        }
+        .toright{
+            float:right;
+        }
+        a{
+            text-decoration: none;
+            color:black;
+        }
+        #tablist a{
+            color:white;
+        }
+        #tablelist{
+            padding: 10px;
+        }
+        .tabletitle{
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="title">
+            <img src="" alt=""> 统计坐标
+        </div>
+        <div id="tablist">
+            <!-- <div class="tab s_blue">
+                <div class="carea">
+                    <div class="img">此处有张图片</div>
+                    <div class="content">
+                        <div class="num">23783</div>
+                        <div class="text">销售额</div>
+
+                    </div>
+                 </div>
+                 <div class="uarea">
+                     <a class="toleft" href="http://www.baidu.com">查看更多</a>
+                     <a class="toright" href="http://www.baidu.com">箭头</a>
+                 </div>
+            </div> -->
+        </div>
+        <div id="tablelist">
+            <div class="tabletitle">一些表格</div>
+            <div id="lefttable" class="toleft"></div>
+            <div id="righttable" class="toright"></div>
+        </div>
+        <div id="chats">
+            <div id="piechat"></div>
+            <div id="linechat"></div>
+        </div>
+    </div>
+</body>
+<script>
+    var tabsData=[
+        {num:2000,text:"本月销售数量",url:"www.baidu.com"},
+        {num:3000,text:"本月生产数量",url:"www.baidu.com"},
+        {num:4000,text:"本月库存数量",url:"www.baidu.com"},
+        {num:5000,text:"收款金额",url:"www.baidu.com"},
+        {num:6000,text:"付款额",url:"www.baidu.com"}
+    ]
+
+    
+
+    window.onload=function(){
+        var tablist=document.getElementById("tablist");
+        for(var i=0;i<tabsData.length;i++){
+            var obj=tabsData[i];
+            var tabDiv=document.createElement("div");
+            var innerContent="<div class=\"carea\"><div class=\"img\">此处有张图片</div><div class=\"content\">";
+            innerContent+="<div class=\"num\">"+obj.num+"</div><div class=\"text\">"+obj.text+"</div></div></div>";
+            innerContent+="<div class=\"uarea\"><a class=\"toleft\" href=\""+obj.url+"\">查看更多</a><a class=\"toright\" href=\""+obj.url+"\">箭头</a></div>"
+            tabDiv.className="tab s_blue";
+            tabDiv.innerHTML=innerContent;
+            tablist.appendChild(tabDiv);
+        }
+       
+
+    }
+
+</script>
+
+</html>
