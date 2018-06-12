@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="DataTables_jy.js"></script>
+    <link rel="stylesheet" href="dataTables.css">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+var jsonData=[
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+]
+
+DataTables_jy.setting={
+    data:jsonData
+}
+DataTables_jy.init();
+document.body.appendChild(DataTables_jy.CreataPrintTable());
+</script>
+</html>

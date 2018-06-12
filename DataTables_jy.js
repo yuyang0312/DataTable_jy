@@ -789,7 +789,7 @@
      CreataPrintTable: function () {
         var print = this.defaultsetting.Print;
         var div = document.createElement("div");
-        var thead = document.getElementById("dataTable").firstChild;
+        var thead =this.createThead();
         var data = "";
         if (this.defaultsetting.isSearching) {
             data = this.defaultsetting.search_data;
@@ -832,6 +832,7 @@
             theadtd[j].style.emptyCells = "show";
             theadtd[j].style.border = "1px solid #000";
             theadtd[j].style.textAlign = "center";
+            if(theadtd[j].style.display=="none") theadtd[j].style.display="";
             
         }
 
