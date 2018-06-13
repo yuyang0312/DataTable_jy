@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="DataTables_jy.js"></script>
-    <link rel="stylesheet" href="dataTables.css">
+    <link rel="stylesheet" href="dataTables_jy.css">
     <title>Document</title>
 </head>
 <body>
@@ -13,36 +13,55 @@
 </body>
 <script>
 var jsonData=[
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2382",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"1",Roll:"1",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"1",Roll:"2",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"1",Roll:"3",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"1",Roll:"4",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"1",Roll:"5",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"1",Roll:"6",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"1",Roll:"7",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"1",Roll:"8",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"9",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"10",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"11",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"12",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"13",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
 
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#1",LotNo:"C#2",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#2",LotNo:"C#1",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"14",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"15",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"16",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"17",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"18",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"2",Roll:"19",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"2",Roll:"20",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"2",Roll:"21",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"1",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"2",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
 ]
 
 DataTables_jy.setting={
-    data:jsonData
+    data:jsonData,
+    Print:{
+        spanCols:["BALE","P_Code","DSNNO","Color","LOTNO"],
+        Items:["P_Code","DSNNO","Color","Roll","MTS","KGS"],
+        Width:["140px","140px","140px","140px","140px","140px"],
+        r_Sum:[
+            {title:"CTTLM",sum:"MTS",rl:"Color"},
+            {title:"CTTLK",sum:"KGS",rl:"Color"},
+            {title:"DTTLM",sum:"MTS",rl:"DSNNO"},
+            {title:"DTTLK",sum:"KGS",rl:"DSNNO"}
+        ],
+        pageBreak:["P_Code","Color"]
+    }
 }
 DataTables_jy.init();
 document.body.appendChild(DataTables_jy.CreataPrintTable());
+
+
+
+
+
+
+
 </script>
 </html>

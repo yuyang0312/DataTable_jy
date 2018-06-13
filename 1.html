@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+    var obj={
+  a:[1,2]
+}
+
+
+console.log(obj);
+
+
+function deepClone(obj){
+    var result={},oClass=isClass(obj);
+    for(key in obj){
+        var copy=obj[key];
+        if(isClass(copy)=="Object"){
+            result[key]=arguments.callee(copy);
+        }else if(isClass(copy)=="Array"){
+            result[key]=arguments.callee(copy);
+        }else{
+            result[key]=obj[key];
+        }
+    }
+    return result;
+}
+function isClass(o){
+    if(o===null) return "Null";
+    if(o===undefined) return "Undefined";
+    return Object.prototype.toString.call(o).slice(8,-1);
+}
+var zzz=deepClone(obj);
+zzz.a=[2,2,2];
+console.log(obj)
+</script>
+</html>
