@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,11 @@
     <script src="DataTables_jy.js"></script>
     <link rel="stylesheet" href="dataTables_jy.css">
     <title>Document</title>
+    <style>
+            td{
+                height:25px;
+            }
+        </style>
 </head>
 <body>
     
@@ -26,7 +32,6 @@ var jsonData=[
     {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"11",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
     {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"12",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
     {P_Code:"AQ2382",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"13",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-
     {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"14",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
     {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"15",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
     {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"16",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
@@ -35,33 +40,31 @@ var jsonData=[
     {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"2",Roll:"19",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
     {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"2",Roll:"20",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
     {P_Code:"AQ2383",DSNNO:"D#1",Color:"C#2",Cust_Color:"CustColor",BALE:"2",Roll:"21",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"1",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
-    {P_Code:"AQ2383",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"2",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"22",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
+    {P_Code:"AQ2383",DSNNO:"D#2",Color:"C#1",Cust_Color:"CustColor",BALE:"2",Roll:"23",P_Colstd:"zzz",LOTNO:"1",MTS:(Math.random()*100 ).toFixed(2),KGS:(Math.random()*100 ).toFixed(2) },
 ]
-
 DataTables_jy.setting={
     data:jsonData,
     Print:{
         spanCols:["BALE","P_Code","DSNNO","Color","LOTNO"],
-        Items:["P_Code","DSNNO","Color","Roll","MTS","KGS"],
-        Width:["140px","140px","140px","140px","140px","140px"],
-        r_Sum:[
-            {title:"CTTLM",sum:"MTS",rl:"Color"},
-            {title:"CTTLK",sum:"KGS",rl:"Color"},
-            {title:"DTTLM",sum:"MTS",rl:"DSNNO"},
-            {title:"DTTLK",sum:"KGS",rl:"DSNNO"}
-        ],
-        pageBreak:["P_Code","Color"]
+        Items:["P_Code","DSNNO","Color","Roll","MTS","KGS","LOTNO"],
+        Width:["50px","50px","50px","50px","50px","50px"],
+        // r_Sum:[
+        //     {title:"CTTLM",sum:"MTS",rl:"Color"},
+        //     {title:"CTTLK",sum:"KGS",rl:"Color"},
+        //     {title:"DTTLM",sum:"MTS",rl:"DSNNO"},
+        //     {title:"DTTLK",sum:"KGS",rl:"DSNNO"}
+        // ],
+        pageBreak:["P_Code"],
+        // onet_num:2,
+        allrows:10
     }
 }
 DataTables_jy.init();
 document.body.appendChild(DataTables_jy.CreataPrintTable());
 
+function reranobjArr(array,sortarray){
 
-
-
-
-
-
+}
 </script>
 </html>
