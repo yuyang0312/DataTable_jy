@@ -62,7 +62,8 @@
              r_Sum:[],     //横向合计
              pageBreak:[],  //分✌
              onet_num:1, //一行有多少table
-             allrows:0//多少行换页
+             allrows:0,//多少行换页
+             circleRule:null//循环规则
          },
          isDetailMarge:false,//是否合并明细
          printDiv: "",//打印导出
@@ -319,9 +320,9 @@
          return table;
  
      },
-     createThead: function () {     //创建表头
+     createThead: function (theadMeaasge) {     //创建表头
         var thead=document.createElement("thead");
-        var theadMeaasge = this.defaultsetting.theadMeaasge;
+        var theadMeaasge = theadMeaasge||this.defaultsetting.theadMeaasge;
         var headStr = theadMeaasge.headStr.split(theadMeaasge.headSplit[0]);
         for(var i=0;i<headStr.length;i++){
             var arr = headStr[i].split(theadMeaasge.headSplit[1]);
@@ -793,7 +794,7 @@
          
      },
      CreataPrintTable: function () {
-        var print = this.defaultsetting.Print;
+        var Print = this.defaultsetting.Print;
         var div = document.createElement("div");
         var thead = this.createThead();
         var data = "";
@@ -804,8 +805,7 @@
         }
         
 
-        var Print = this.defaultsetting.Print;
-        
+       
         var pageBreakeArray=[[]];//分页行数
         var n_index=0;
         var pageBreakeData=[];
@@ -859,7 +859,7 @@
             td.style.border="1px solid #000";
             cloneThead.lastChild.appendChild(td);
         }    
-        console.log(pageBreakeArray);
+        //  console.log(pageBreakeArray.length);
         /*********横向合计********* */
         for(var u=0;u<pageBreakeArray.length;u++){
                 var printTable = document.createElement("table"); 
@@ -868,12 +868,12 @@
                 
                 var nowthead=cloneThead.cloneNode(true);
                 printTable.appendChild(nowthead); 
-                console.log(pageBreakeArray[u].length+"---"+Print.allrows);   
+                // console.log(pageBreakeArray[u].length+"---"+Print.allrows);   
                 if(pageBreakeArray[u].length<Print.allrows){
                     for(var r=pageBreakeArray[u].length;r<Print.allrows;r++){
                         var n_obj={};
-                        for(var o=0;o<print.Items.length;o++){
-                            n_obj[print.Items[o]]="";
+                        for(var o=0;o<Print.Items.length;o++){
+                            n_obj[Print.Items[o]]="";
                         }
                         pageBreakeArray[u].push(n_obj);
                     }
@@ -881,22 +881,22 @@
                 }
                 this.CreatePrintBody(pageBreakeArray[u],printTable,Print);
                 if (Print.Title) {
-                    for (var k = print.Title.length - 1; k >= 0 ; k--) {
+                    for (var k = Print.Title.length - 1; k >= 0 ; k--) {
                         var tr = document.createElement("tr");
                         var td = document.createElement("td");
                         td.setAttribute("colSpan", Print.Width.length);
-                        td.innerHTML = print.Title[k];
-                        td.style.cssText = print.Style&&print.Style[k] || "";
-                        td.setAttribute("style", print.Style && print.Style[k] || "");
+                        td.innerHTML = Print.Title[k];
+                        td.style.cssText = Print.Style&&Print.Style[k] || "";
+                        td.setAttribute("style", Print.Style && Print.Style[k] || "");
                         tr.appendChild(td);
                         nowthead.insertBefore(tr, nowthead.firstChild);
                     }
                     var tr = document.createElement('tr');
-                    for (var k = 0  ; k < print.Width.length; k++) {
+                    for (var k = 0  ; k < Print.Width.length; k++) {
                         var td = document.createElement("td");
                         td.style.height = "0px";
                         td.style.border = "none";
-                        td.style.width = print.Width[k];
+                        td.style.width = Print.Width[k];
                         tr.appendChild(td);
 
                     }
@@ -920,7 +920,8 @@
      CreatePrintBody:function(data,printTable,Print){
         //  var isRowspanCol=deepCloneObj(isRowspanCol);var ColObject=deepCloneObj(ColObject);
         //  var SpanCount=deepCloneObj(SpanCount);var s_Index=deepCloneObj(s_Index);var r_SumtdArray=deepCloneObj(r_SumtdArray);
-        var ColObject = {};
+        
+        var ColObject = getRowspan(data,Print);
         var oldArray = new Array(Print.spanCols.length);
         var CountArray = [];//计数
         var SpanCount = {};//计数 
@@ -932,42 +933,63 @@
             r_SumtdArray[Print.r_Sum[j].title]=document.createElement("td");
         }    
         for (var p = 0; p < Print.spanCols.length; p++) {
-            ColObject[Print.spanCols[p]] = [1];
-            CountArray.push(0);
+        
             SpanCount[Print.spanCols[p]]=0;
             isRowspanCol[Print.spanCols[p]]=true;
             s_Index[Print.spanCols[p]]=0;
         }
 
-        for (var k = 0; k < data.length; k++) {
-            /*********合并行********* */
-               for (var l = 0; l < Print.spanCols.length; l++) {
-                   if (oldArray[l] == data[k][Print.spanCols[l]]) {
-                       if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
-                       ColObject[Print.spanCols[l]][CountArray[l]]++;
-                       
-                   } else {
-                       oldArray[l] = data[k][Print.spanCols[l]];
-                       k > 0 && CountArray[l]++;
-                       if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
-   
-                   }
-               }}
-               var keyarray=[]
-        for(var key in ColObject){
-            keyarray.push(key);
+        
+        var sortArray=Print.Items;
+            if(!sortArray||sortArray.length==0){
+                for(var text in data[i]){
+                    sortArray.push(text);
+                }
+            }
+        if(Print.circleRule){
+            var lastArr= ColObject[Print.spanCols[Print.spanCols.length-1]];
+            var newdata=[];
+            for(var b=0;b<lastArr.length;b++)
+            {
+                var tempArray=[];
+                var num=lastArr[b];
+                var start=0;
+                for(var r=0;r<b;r++){
+                    start+=lastArr[r];
+                }
+                for(var g=start;g<start+num;g++){
+                    tempArray.push(deepCloneObj(data[g]));
+                }
+                newdata=newdata.concat(reranobjArr(tempArray,Print.circleRule));
+            }
+            data=newdata;
+            ColObject=getRowspan(data,Print);
+
         }
-        for(var i=0;i<keyarray.length-1;i++){
-            ColObject[keyarray[i+1]]=regroup(ColObject[keyarray[i]],ColObject[keyarray[i+1]]);
-        }
+        /**开始生成单元格 */
         for (var i = 0; i < data.length; i++) {
 
             var tr = document.createElement("tr");
             var t = 0;
+            var isFirstCycle=true;
             
-            for (var text in data[i]) {
-                if (contains(Print.Items,text)>-1) {
-
+            for (var p=0;p<sortArray.length;p++) {
+                var text=sortArray[p];
+                    if(contains(Print.circleRule.circleItem,text)>-1){
+                        if(isFirstCycle){
+                        isFirstCycle=false;    
+                        for(var h=0;h<data[i][text].length;h++)
+                            for(var f=0;f<Print.circleRule.circleItem.length;f++)
+                            {
+                                var td = document.createElement("td");
+                                td.innerHTML = data[i][Print.circleRule.circleItem[f]][h];
+                                td.style.emptyCells = "show";
+                                td.style.border = "1px solid #000";
+                                td.style.textAlign = "center";
+                                tr.appendChild(td);
+                            }
+                        }
+                    }else{
                     var td = document.createElement("td");
                     td.innerHTML = data[i][text];
                     td.style.emptyCells = "show";
@@ -975,7 +997,7 @@
                     td.style.textAlign = "center";
                     
                     if (contains(Print.spanCols, text) > -1) {
-            
+                        //跨行显示
                         if (isRowspanCol[text]) {
                             
                          
@@ -1017,7 +1039,7 @@
                     
                 }
                 t++;
-            }
+            
                 
                 for(var key in r_SumtdArray){
                     r_SumtdArray[key].innerHTML&&tr.appendChild(r_SumtdArray[key]);
@@ -1028,7 +1050,7 @@
             
 
             printTable.appendChild(tr);
-
+                }
         }
      },
      Print: function () {
@@ -1103,6 +1125,40 @@
      }
  
  }
+/**获取跨行 */
+ function getRowspan(data,Print){
+    var ColObject={};
+    var CountArray=[];
+    var oldArray = new Array(Print.spanCols.length);
+    for (var p = 0; p < Print.spanCols.length; p++) {
+        ColObject[Print.spanCols[p]] = [1];
+        CountArray.push(0);
+        
+    }
+
+    for (var k = 0; k < data.length; k++) {
+        /*********合并行********* */
+           for (var l = 0; l < Print.spanCols.length; l++) {
+               if (oldArray[l] == data[k][Print.spanCols[l]]) {
+                   if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
+                   ColObject[Print.spanCols[l]][CountArray[l]]++;
+                   
+               } else {
+                   oldArray[l] = data[k][Print.spanCols[l]];
+                   k > 0 && CountArray[l]++;
+                   if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
+
+               }
+           }}
+    var keyarray=[];
+    for(var key in ColObject){
+        keyarray.push(key);
+    }
+    for(var i=0;i<keyarray.length-1;i++){
+        ColObject[keyarray[i+1]]=regroup(ColObject[keyarray[i]],ColObject[keyarray[i+1]]);
+    }
+    return ColObject;
+ }
 /************对象深克隆***************/
  function deepCloneObj(obj){
     var result={},oClass=isClass(obj);
@@ -1133,6 +1189,46 @@ function isClass(o){
     return Object.prototype.toString.call(o).slice(8,-1);
 }
 /************对象深克隆***************/
+
+/**根据循环规则重写数组 */
+function reranobjArr(jsonData,row){
+    var length=jsonData.length;
+    var newArray=[];
+    for(var i=0;i<length;i++){
+        if(!jsonData[i].hasOwnProperty("zzflag")){
+          
+        var newObj=deepCloneObj(jsonData[i]);
+        for(var data in newObj){
+            if(contains(row.circleItem,data)>-1)
+            {
+                var text=newObj[data];
+                var array=[text];
+                newObj[data]=array;
+            }
+        }
+        newArray.push(newObj);
+        for(var l=1;l<row.maxCount;l++){
+            if(i+l*row.margin<length){
+                for(var h=0;h<row.circleItem.length;h++){
+                    newObj[row.circleItem[h]].push(jsonData[i+l*row.margin][row.circleItem[h]]);
+
+                    jsonData[i+l*row.margin]["zzflag"]="y";
+
+                }
+            }else{
+                for(var h=0;h<row.circleItem.length;h++){
+                    newObj[row.circleItem[h]].push("");
+
+                  
+                }
+            }
+
+        }
+    }
+    }
+    return newArray;
+}
+/**根据循环规则重写数组 */
 
  function turnTo(e) {
      var e = e || event;
