@@ -63,7 +63,8 @@
              pageBreak:[],  //分✌
              onet_num:1, //一行有多少table
              allrows:0,//多少行换页
-             circleRule:null//循环规则
+             circleRule:null,//循环规则
+             circletd:null
          },
          isDetailMarge:false,//是否合并明细
          printDiv: "",//打印导出
@@ -1016,14 +1017,50 @@
                                 r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "center";
                             }
                             }
-                            
-                            td.rowSpan = ColObject[text][SpanCount[text]]--;
-                            isRowspanCol[text] = false;
+                            var rowspanCount=ColObject[text][SpanCount[text]];
                             tr.appendChild(td);
+                            clonebottomtr&&printTable.appendChild(clonebottomtr);
+                            if(Print.circletd){
+                                for(var c=0;c<Print.circletd.length;c++){
+                                    
+                                        if(Print.circletd[c].hasOwnProperty("top")){
+                                            rowspanCount++;
+                                            if(Print.circletd[c].fatherEle==text){
+                                                var toptdlist=getTdlistByStr(Print.circletd[c]["top"]);
+                                            
+                                                for(var t=0;t<toptdlist.length;t++){
+                                                    tr.appendChild(toptdlist[t]);
+                                                }
+                                                printTable.appendChild(tr);
+                                                
+                                                tr=document.createElement("tr");
+                                        }
+                                        }
+                                        if(Print.circletd[c].hasOwnProperty("bottom"))
+                                        {
+                                           
+                                            if(Print.circletd[c].fatherEle==text){
+                                                var bottomtdlist=getTdlistByStr(Print.circletd[c]["bottom"]);
+                                                var clonebottomtr=document.createElement("tr");
+                                                for(var t=0;t<bottomtdlist.length;t++){
+                                                    clonebottomtr.appendChild(bottomtdlist[t]);
+                                                }
+                                        }
+                                            rowspanCount++;
+                                            if(text=="LOTNO")
+                                            console.log(rowspanCount);
+                                        }
+                                    }
+                                
+                            }
+                            td.rowSpan = rowspanCount;
+                            isRowspanCol[text] = false;
+                            
                             if (ColObject[text][SpanCount[text]] == 0) {
                                 isRowspanCol[text] = true;
                                 SpanCount[text]++;
                             }
+                            ColObject[text][SpanCount[text]]--;
                             s_Index[text]++;
                         } else {
                             s_Index[text]++;
@@ -1189,6 +1226,25 @@ function isClass(o){
     return Object.prototype.toString.call(o).slice(8,-1);
 }
 /************对象深克隆***************/
+
+
+/**解析字符串为数组 */
+function getTdlistByStr(str){
+    var tdarray=str.split('#');
+    var tdlist=[];
+    for(var i=0;i<tdarray.length;i++){
+        var td=document.createElement("td");
+        var tdDeatil=tdarray[i].split(',');
+        td.innerHTML=tdDeatil[0];
+        td.rowSpan=tdDeatil[1];
+        td.colSpan=tdDeatil[2];
+        td.style.emptyCells = "show";
+        td.style.border = "1px solid #000";
+        td.style.textAlign = "center";
+        tdlist.push(td);
+    }
+    return tdlist;
+}
 
 /**根据循环规则重写数组 */
 function reranobjArr(jsonData,row){
