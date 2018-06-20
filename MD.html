@@ -49,16 +49,17 @@ DataTables_jy.setting={
         headStr:"P_Code,1,1,,#DSNNO,1,1,,#Color,1,1,,#LOTNO,1,1,,#Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#Roll,1,1,,#MTS,1,1,,#KGS,1,1,,"
     },
     Print:{
-        spanCols:["BALE","P_Code","DSNNO","Color","LOTNO"],
-        Items:["P_Code","DSNNO","Color","LOTNO","Roll","MTS","KGS"],
+        spanCols:["Color","LOTNO"],
+        Items:["Color","LOTNO","Roll","MTS","KGS"],
         Width:["50px","50px","50px","50px","50px","50px"],
         
-        // r_Sum:[
-        //     {title:"CTTLM",sum:"MTS",rl:"Color"},
-        //     {title:"CTTLK",sum:"KGS",rl:"Color"},
-        //     {title:"DTTLM",sum:"MTS",rl:"DSNNO"},
-        //     {title:"DTTLK",sum:"KGS",rl:"DSNNO"}
-        // ],
+        r_Sum:[
+            {title:"CTTLM",sum:"MTS",rl:"Color"},
+            {title:"CTTLK",sum:"KGS",rl:"Color"},
+            {title:"DTTLM",sum:"MTS",rl:"DSNNO"},
+            {title:"DTTLK",sum:"KGS",rl:"DSNNO"}
+        ],
+        
         // pageBreak:["P_Code"],
         // onet_num:2,
         // allrows:10
@@ -70,8 +71,8 @@ DataTables_jy.setting={
         circletd:[
             {
                 fatherEle:"LOTNO",
-                top:"Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#Roll,1,1,,#MTS,1,1,,#KGS,1,1,,",
-                bottom:"total,1,6,,"
+                top:"Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#,1,1,,#,1,1,,",
+                bottom:"total,1,6,,#&MTS&,1,1,,#&KGS&,1,1,,"
 
             }
         ]
@@ -123,7 +124,7 @@ function reranobjArr(array,sortarray){
     return newArray;
 }
 
-console.log(reranobjArr());
+
 
 
 /************对象深克隆***************/

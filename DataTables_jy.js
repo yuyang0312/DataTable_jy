@@ -976,36 +976,31 @@
                     var bottomlastMax=0;
                     if (r_data == Print.circletd[c].fatherEle) {
                         if (Print.circletd[c].hasOwnProperty("top")) {
-                            for (var i = 0; i < ColObject[r_data].length; i++) {
-                                var new_obj = deepCloneObj(data[toplastMax]);
-                                new_obj["countflag"] = "no";
-                                console.log(toplastMax);
-                                data.splice(toplastMax, 0, new_obj);
-                                
-                                toplastMax += ColObject[r_data][i] + 1;
-                                
-                            }
+                            insertedCount++;
+                           
                         }
                         if (Print.circletd[c].hasOwnProperty("bottom")) {
-                            for (var i = 0; i < ColObject[r_data].length; i++) {
-                                
-                                bottomlastMax += ColObject[r_data][i];
-                                var new_obj = deepCloneObj(data[bottomlastMax]);
-                                new_obj["countflag"] = "no";
-                                data.splice(bottomlastMax, 0, null);
-                                
-                            }
+                            insertedCount++;
+                        }
+                        
+                        for (var i = 0; i < ColObject[r_data].length; i++) {
+                        for(var u=0;u<insertedCount;u++){
+                            var new_obj = deepCloneObj(data[toplastMax]);
+                            new_obj["countflag"] = "no";
+                            data.splice(toplastMax, 0, new_obj);
+                        }
+                            toplastMax += ColObject[r_data][i] + insertedCount;
+                            
                         }
                     }
                 }
             }
-            
             ColObject = getRowspan(data, Print);
-            console.log(deepCloneObj(ColObject));
         }
-        
         /**开始生成单元格 */
         for (var i = 0; i < data.length; i++) {
+           
+           
             if (!data[i]["countflag"]) {
                 var tr = document.createElement("tr");
                 var t = 0;
@@ -1042,11 +1037,24 @@
 
                                     if (Print.r_Sum[ps].rl == text) {
 
-                                        r_SumtdArray[Print.r_Sum[ps].title].rowSpan = ColObject[text][SpanCount[text]];
+                                        r_SumtdArray[Print.r_Sum[ps].title].rowSpan = ColObject[text][SpanCount[text]]-2;
                                         var r_SumInner = 0;
                                         for (var zz = s_Index[text]; zz < s_Index[text] + ColObject[text][SpanCount[text]]; zz++) {
+                                        if(!data[zz]["countflag"]){
                                             if (Print.r_Sum[ps].sum == "RollCount") r_SumInner++
-                                            else r_SumInner += parseFloat(data[zz][Print.r_Sum[ps].sum]);
+                                            else {
+                                                var sumarray=data[zz][Print.r_Sum[ps].sum];
+                                                if(Object.prototype.toString.call(sumarray)=='[object Array]'){
+                                                    for(var y=0;y<sumarray.length;y++){
+                                                        r_SumInner+=parseFloat(sumarray[y]==""?"0":sumarray[y]);
+                                                       
+                                                    }
+                                                }else{
+                                                 r_SumInner += parseFloat(data[zz][Print.r_Sum[ps].sum]==""?"0":data[zz][Print.r_Sum[ps].sum]);
+                                                }
+                                            }
+                                        }
+                                           
 
                                         }
                                         r_SumtdArray[Print.r_Sum[ps].title].innerHTML = r_SumInner.toFixed(2);
@@ -1060,7 +1068,7 @@
                                 
                                 var rowspanCount = ColObject[text][SpanCount[text]];
                                 tr.appendChild(td);
-                                clonebottomtr && printTable.appendChild(clonebottomtr);
+                               
                                 if (Print.circletd) {
                                     for (var c = 0; c < Print.circletd.length; c++) {
 
@@ -1075,8 +1083,12 @@
                                                     tr.appendChild(toptdlist[t]);
                                                 }
                                                 printTable.appendChild(tr);
-                                                ColObject[text][SpanCount[text]]--;
-                                                ColObject["颜色"][SpanCount["颜色"]]--;
+                                               
+                                                for(var ztext in ColObject){
+                                                    ColObject[ztext][SpanCount[ztext]]--;
+                                                    if(ztext==text) break;
+
+                                                }
                                                 tr = document.createElement("tr");
                                             }
                                         }
@@ -1088,6 +1100,12 @@
                                                 for (var t = 0; t < bottomtdlist.length; t++) {
                                                     clonebottomtr.appendChild(bottomtdlist[t]);
                                                 }
+                                                for(var ztext in ColObject){
+                                                    ColObject[ztext][SpanCount[ztext]]--;
+                                                    if(ztext==text) break;
+
+                                                }
+                                                
                                             }
                                             //rowspanCount++;
 
@@ -1125,6 +1143,7 @@
 
                                     isRowspanCol[text] = true;
                                     SpanCount[text]++;
+                                   
                                 }
                             }
                             continue;
@@ -1169,6 +1188,7 @@
 
 
                 printTable.appendChild(tr);
+                clonebottomtr && printTable.appendChild(clonebottomtr);
 
             }
 
