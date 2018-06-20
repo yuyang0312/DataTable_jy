@@ -60,6 +60,7 @@
              Style:[],
              Items:[],    //打印要显示的列及顺序
              r_Sum:[],     //横向合计
+             c_Sum:[],     //纵向合计
              pageBreak:[],  //分✌
              onet_num:1, //一行有多少table
              allrows:0,//多少行换页
@@ -840,11 +841,11 @@
         var theadtd = cloneThead.getElementsByTagName("td");
         var thlength=theadtd.length;
         for (var j = 0; j < thlength; j++) {
-            theadtd[j].style.emptyCells = "show";
-            theadtd[j].style.border = "1px solid #000";
-            theadtd[j].style.textAlign = "center";
-            if(contains(Print.Items,theadtd[j].innerHTML)>-1) theadtd[j].style.display="";
-            else theadtd[j].style.display="none";
+            //theadtd[j].style.emptyCells = "show";
+            //theadtd[j].style.border = "1px solid #000";
+            //theadtd[j].style.textAlign = "center";
+            //if (contains(Print.Items, theadtd[j].getAttribute("data-sort-key")) > -1) theadtd[j].style.display = "";
+            //else theadtd[j].style.display="none";
             
         }
         /*********表头**********/
@@ -852,15 +853,14 @@
 
 
         /*********横向合计**********/
-        var r_SumtdArray={};
-        for(var j=0;j<Print.r_Sum.length;j++)
-        {
-            var td=document.createElement("td");
-            td.innerHTML=Print.r_Sum[j].title;
-            td.style.border="1px solid #000";
-            cloneThead.lastChild.appendChild(td);
-        }    
-        //  console.log(pageBreakeArray.length);
+        //var r_SumtdArray={};
+        //for(var j=0;j<Print.r_Sum.length;j++)
+        //{
+        //    var td=document.createElement("td");
+        //    td.innerHTML=Print.r_Sum[j].title;
+        //    td.style.border="1px solid #000";
+        //    cloneThead.lastChild.appendChild(td);
+        //}    
         /*********横向合计********* */
         for(var u=0;u<pageBreakeArray.length;u++){
                 var printTable = document.createElement("table"); 
@@ -884,6 +884,7 @@
                 if (Print.Title) {
                     for (var k = Print.Title.length - 1; k >= 0 ; k--) {
                         var tr = document.createElement("tr");
+                        tr.className = "noborder";
                         var td = document.createElement("td");
                         td.setAttribute("colSpan", Print.Width.length);
                         td.innerHTML = Print.Title[k];
@@ -964,130 +965,219 @@
                 newdata=newdata.concat(reranobjArr(tempArray,Print.circleRule));
             }
             data=newdata;
-            ColObject=getRowspan(data,Print);
+            ColObject = getRowspan(data, Print);
 
         }
-        /**开始生成单元格 */
-        for (var i = 0; i < data.length; i++) {
-
-            var tr = document.createElement("tr");
-            var t = 0;
-            var isFirstCycle=true;
-            
-            for (var p=0;p<sortArray.length;p++) {
-                var text=sortArray[p];
-                    if(contains(Print.circleRule.circleItem,text)>-1){
-                        if(isFirstCycle){
-                        isFirstCycle=false;    
-                        for(var h=0;h<data[i][text].length;h++)
-                            for(var f=0;f<Print.circleRule.circleItem.length;f++)
-                            {
-                                var td = document.createElement("td");
-                                td.innerHTML = data[i][Print.circleRule.circleItem[f]][h];
-                                td.style.emptyCells = "show";
-                                td.style.border = "1px solid #000";
-                                td.style.textAlign = "center";
-                                tr.appendChild(td);
+        if (Print.circletd) {
+            for (var c = 0; c < Print.circletd.length; c++) {
+                for (var r_data in ColObject) {
+                    var toplastMax = 0;
+                    var insertedCount = 0;
+                    var bottomlastMax=0;
+                    if (r_data == Print.circletd[c].fatherEle) {
+                        if (Print.circletd[c].hasOwnProperty("top")) {
+                            for (var i = 0; i < ColObject[r_data].length; i++) {
+                                var new_obj = deepCloneObj(data[toplastMax]);
+                                new_obj["countflag"] = "no";
+                                console.log(toplastMax);
+                                data.splice(toplastMax, 0, new_obj);
+                                
+                                toplastMax += ColObject[r_data][i] + 1;
+                                
                             }
                         }
-                    }else{
-                    var td = document.createElement("td");
-                    td.innerHTML = data[i][text];
-                    td.style.emptyCells = "show";
-                    td.style.border = "1px solid #000";
-                    td.style.textAlign = "center";
-                    
-                    if (contains(Print.spanCols, text) > -1) {
-                        //跨行显示
-                        if (isRowspanCol[text]) {
-                            
-                         
-                            for(var ps=0;ps<Print.r_Sum.length;ps++){
-                                if(Print.r_Sum[ps].rl==text){
-                                r_SumtdArray[Print.r_Sum[ps].title].rowSpan=ColObject[text][SpanCount[text]];
-                                var r_SumInner=0;
-                                for(var zz=s_Index[text];zz<s_Index[text]+ColObject[text][SpanCount[text]];zz++){
-                                    r_SumInner+=parseFloat(data[zz][Print.r_Sum[ps].sum]);
-                                }
-                                r_SumtdArray[Print.r_Sum[ps].title].innerHTML=r_SumInner.toFixed(2);
-                                r_SumInner=0;
+                        if (Print.circletd[c].hasOwnProperty("bottom")) {
+                            for (var i = 0; i < ColObject[r_data].length; i++) {
+                                
+                                bottomlastMax += ColObject[r_data][i];
+                                var new_obj = deepCloneObj(data[bottomlastMax]);
+                                new_obj["countflag"] = "no";
+                                data.splice(bottomlastMax, 0, null);
+                                
+                            }
+                        }
+                    }
+                }
+            }
+            
+            ColObject = getRowspan(data, Print);
+            console.log(deepCloneObj(ColObject));
+        }
+        
+        /**开始生成单元格 */
+        for (var i = 0; i < data.length; i++) {
+            if (!data[i]["countflag"]) {
+                var tr = document.createElement("tr");
+                var t = 0;
+                var isFirstCycle = true;
 
-                                r_SumtdArray[Print.r_Sum[ps].title].style.emptyCells = "show";
-                                r_SumtdArray[Print.r_Sum[ps].title].style.border = "1px solid #000";
-                                r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "center";
-                            }
-                            }
-                            var rowspanCount=ColObject[text][SpanCount[text]];
-                            tr.appendChild(td);
-                            clonebottomtr&&printTable.appendChild(clonebottomtr);
-                            if(Print.circletd){
-                                for(var c=0;c<Print.circletd.length;c++){
-                                    
-                                        if(Print.circletd[c].hasOwnProperty("top")){
-                                            rowspanCount++;
-                                            if(Print.circletd[c].fatherEle==text){
-                                                var toptdlist=getTdlistByStr(Print.circletd[c]["top"]);
-                                            
-                                                for(var t=0;t<toptdlist.length;t++){
+                for (var p = 0; p < sortArray.length; p++) {
+                    var text = sortArray[p];
+
+                    if (Print.circleRule && Print.circleRule.circleItem && contains(Print.circleRule.circleItem, text) > -1) {
+                        if (isFirstCycle) {
+                            isFirstCycle = false;
+                            for (var h = 0; h < data[i][text].length; h++)
+                                for (var f = 0; f < Print.circleRule.circleItem.length; f++) {
+                                    var td = document.createElement("td");
+                                    td.innerHTML = data[i][Print.circleRule.circleItem[f]][h];
+                                    td.style.emptyCells = "show";
+                                    td.style.border = "1px solid #000";
+                                    td.style.textAlign = "center";
+                                    tr.appendChild(td);
+                                }
+                        }
+                    } else {
+                        
+                        var td = document.createElement("td");
+                        td.innerHTML = data[i][text];
+                        td.style.emptyCells = "show";
+                        td.style.border = "1px solid #000";
+                        td.style.textAlign = "center";
+
+                        if (contains(Print.spanCols, text) > -1) {
+                            //跨行显示
+                            if (isRowspanCol[text]) {
+                                for (var ps = 0; ps < Print.r_Sum.length; ps++) {
+
+                                    if (Print.r_Sum[ps].rl == text) {
+
+                                        r_SumtdArray[Print.r_Sum[ps].title].rowSpan = ColObject[text][SpanCount[text]];
+                                        var r_SumInner = 0;
+                                        for (var zz = s_Index[text]; zz < s_Index[text] + ColObject[text][SpanCount[text]]; zz++) {
+                                            if (Print.r_Sum[ps].sum == "RollCount") r_SumInner++
+                                            else r_SumInner += parseFloat(data[zz][Print.r_Sum[ps].sum]);
+
+                                        }
+                                        r_SumtdArray[Print.r_Sum[ps].title].innerHTML = r_SumInner.toFixed(2);
+                                        r_SumInner = 0;
+
+                                        r_SumtdArray[Print.r_Sum[ps].title].style.emptyCells = "show";
+                                        r_SumtdArray[Print.r_Sum[ps].title].style.border = "1px solid #000";
+                                        r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "center";
+                                    }
+                                }
+                                
+                                var rowspanCount = ColObject[text][SpanCount[text]];
+                                tr.appendChild(td);
+                                clonebottomtr && printTable.appendChild(clonebottomtr);
+                                if (Print.circletd) {
+                                    for (var c = 0; c < Print.circletd.length; c++) {
+
+                                        if (Print.circletd[c].hasOwnProperty("top")) {
+
+                                            if (Print.circletd[c].fatherEle == text) {
+
+                                                //rowspanCount++;
+                                                //addtrRowspan(tr, 1);
+                                                var toptdlist = getTdlistByStr(Print.circletd[c]["top"]);
+                                                for (var t = 0; t < toptdlist.length; t++) {
                                                     tr.appendChild(toptdlist[t]);
                                                 }
                                                 printTable.appendChild(tr);
-                                                
-                                                tr=document.createElement("tr");
+                                                ColObject[text][SpanCount[text]]--;
+                                                ColObject["颜色"][SpanCount["颜色"]]--;
+                                                tr = document.createElement("tr");
+                                            }
                                         }
-                                        }
-                                        if(Print.circletd[c].hasOwnProperty("bottom"))
-                                        {
-                                           
-                                            if(Print.circletd[c].fatherEle==text){
-                                                var bottomtdlist=getTdlistByStr(Print.circletd[c]["bottom"]);
-                                                var clonebottomtr=document.createElement("tr");
-                                                for(var t=0;t<bottomtdlist.length;t++){
+                                        if (Print.circletd[c].hasOwnProperty("bottom")) {
+
+                                            if (Print.circletd[c].fatherEle == text) {
+                                                var bottomtdlist = getTdlistByStr(Print.circletd[c]["bottom"]);
+                                                var clonebottomtr = document.createElement("tr");
+                                                for (var t = 0; t < bottomtdlist.length; t++) {
                                                     clonebottomtr.appendChild(bottomtdlist[t]);
                                                 }
-                                        }
-                                            rowspanCount++;
-                                            if(text=="LOTNO")
-                                            console.log(rowspanCount);
+                                            }
+                                            //rowspanCount++;
+
                                         }
                                     }
-                                
+
+                                }
+
+
+                                if (Print.c_Sum.length > 0) {
+
+                                    if (Print.c_Sum[0].cl == text) {
+                                        c_Sumtr && printTable.appendChild(c_Sumtr);
+                                        var c_Sumtr = document.createElement("tr");
+                                        c_Sumtr.innerHTML = "<td>sads</td>asd<td>asd</td><td></td><td></td><td></td><td></td><td></td><td></td>";
+                                        //addtrRowspan(tr, 1, isRowspanCol);
+                                        //rowspanCount++;
+                                    }
+
+
+                                }
+                                td.setAttribute("data-kh", "kh");
+                                td.rowSpan = rowspanCount;
+                                isRowspanCol[text] = false;
+
+                                if (ColObject[text][SpanCount[text]] == 0) {
+                                    isRowspanCol[text] = true;
+                                    SpanCount[text]++;
+                                }
+                                ColObject[text][SpanCount[text]]--;
+                                s_Index[text]++;
+                            } else {
+                                s_Index[text]++;
+                                if (--ColObject[text][SpanCount[text]] == 0) {
+
+                                    isRowspanCol[text] = true;
+                                    SpanCount[text]++;
+                                }
                             }
-                            td.rowSpan = rowspanCount;
-                            isRowspanCol[text] = false;
-                            
-                            if (ColObject[text][SpanCount[text]] == 0) {
-                                isRowspanCol[text] = true;
-                                SpanCount[text]++;
-                            }
-                            ColObject[text][SpanCount[text]]--;
-                            s_Index[text]++;
-                        } else {
-                            s_Index[text]++;
-                            if (--ColObject[text][SpanCount[text]] == 0) {
-                               
-                                isRowspanCol[text] = true;
-                                SpanCount[text]++;
+                            continue;
+                        }
+
+                        tr.appendChild(td);
+
+                    }
+                    t++;
+                }
+                for (var ps = 0; ps < Print.r_Sum.length; ps++) {
+
+                    if (Print.r_Sum[ps].rl == "ROW") {
+                        var r_SumInner = 0;
+                        if (Print.r_Sum[ps].sum == "RollCount") {
+                            for (var zz = 0; zz < data[i]["卷号"].length; zz++) {
+                                if (data[i]["卷号"][zz]) r_SumInner++;
                             }
                         }
-                        continue;
-                    }
-                    tr.appendChild(td);
-                    
-                }
-                t++;
-            
-                
-                for(var key in r_SumtdArray){
-                    r_SumtdArray[key].innerHTML&&tr.appendChild(r_SumtdArray[key]);
-                
-                r_SumtdArray[key]=document.createElement("td");
-                 }
-            
-            
+                        else {
+                            for (var zz = 0; zz < data[i][Print.r_Sum[ps]["sum"]].length; zz++) {
 
-            printTable.appendChild(tr);
+                                r_SumInner += parseFloat(data[i][Print.r_Sum[ps]["sum"]][zz] == "" ? "0" : data[i][Print.r_Sum[ps]["sum"]][zz]);
+
+                            }
+                        }
+                        r_SumtdArray[Print.r_Sum[ps].title].innerHTML = r_SumInner.toFixed(2);
+                        r_SumInner = 0;
+
+                        r_SumtdArray[Print.r_Sum[ps].title].style.emptyCells = "show";
+                        r_SumtdArray[Print.r_Sum[ps].title].style.border = "1px solid #000";
+                        r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "center";
+                    }
                 }
+
+                for (var key in r_SumtdArray) {
+                    r_SumtdArray[key].innerHTML && tr.appendChild(r_SumtdArray[key]);
+
+                    r_SumtdArray[key] = document.createElement("td");
+                }
+
+
+
+                printTable.appendChild(tr);
+
+            }
+
+            if (Print.c_Sum.length > 0) {
+                if (Print.c_Sum[0].cl == "total") {
+
+                    printTable.appendChild(Print.c_Sum[0].tr);
+                }
+            }
         }
      },
      Print: function () {
@@ -1284,6 +1374,17 @@ function reranobjArr(jsonData,row){
     }
     return newArray;
 }
+    /**将tr中所有的的rowspan加一 */
+function addtrRowspan(tr, num, isRowspanCol) {
+    var tdlist = tr.getElementsByTagName("td");
+    for (var i = 0; i < tdlist.length; i++) {
+        if (tdlist[i].getAttribute("data-kh") == "kh") {
+            tdlist[i].rowSpan = parseInt(tdlist[i].rowSpan) + num;
+        }
+    }
+}
+
+
 /**根据循环规则重写数组 */
 
  function turnTo(e) {
