@@ -18,7 +18,7 @@ public partial class Admin_print_sirun_FPDepotPackDetailPrint5 : System.Web.UI.P
     public string LitNo = "";
     string ShipmentNo = "";
     string code = "";
-    string type="";
+    public string type="";
     public string jsonData = "";
     public string NW = "";
     public string GW = "";
@@ -33,31 +33,7 @@ public partial class Admin_print_sirun_FPDepotPackDetailPrint5 : System.Web.UI.P
             ShipmentNo = Request.QueryString["ShipmentNo"] == null ? "" : Request.QueryString["ShipmentNo"].ToString();
             code = Request.QueryString["code"] == null ? "" : Request.QueryString["code"].ToString();
             type = Request.QueryString["type"] == null ? "" : Request.QueryString["type"].ToString();
-            if (type == "xml")
-            {
-                GetDataSource(ShipmentNo, code);
-
-                //  this.Label1.Text = "word";
-                Response.Clear();
-                Response.Buffer = true;
-                Response.Charset = "GB2312";
-                Response.ContentType = "application nd.ms-Excel";
-                Response.AddHeader("Content-Disposition", "inline;filename=" + HttpUtility.UrlEncode("细码单" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xls", Encoding.UTF8));
-                //Response.ContentEncoding = System.Text.Encoding.GetEncoding("GB2312");
-                Response.ContentEncoding = System.Text.Encoding.UTF7;
-                this.EnableViewState = false;
-                //　定义一个输入流
-                StringBuilder sb = new StringBuilder();
-                System.IO.StringWriter oStringWriter = new System.IO.StringWriter(sb);
-                System.Web.UI.HtmlTextWriter oHtmlTextWriter = new System.Web.UI.HtmlTextWriter(oStringWriter);
-                //sb.Append("oHtmlTextWriter");
-                this.RenderControl(oHtmlTextWriter);
-                //this 表示输出本页，你也可以绑定datagrid,或其他支持obj.RenderControl()属性的控件
-                Response.Write(sb.ToString());
-                Response.End();
-
-            }
-            else if (type == "word")
+             if (type == "word")
             {
                 GetDataSource(ShipmentNo, code);
                 Response.Clear();
