@@ -11,6 +11,7 @@
     <style>
             td{
                 height:25px;
+                border:1px solid #000;
             }
         </style>
 </head>
@@ -54,10 +55,10 @@ DataTables_jy.setting={
         Width:["50px","50px","50px","50px","50px","50px"],
         
         r_Sum:[
-            {title:"CTTLM",sum:"MTS",rl:"Color"},
-            {title:"CTTLK",sum:"KGS",rl:"Color"},
-            {title:"DTTLM",sum:"MTS",rl:"DSNNO"},
-            {title:"DTTLK",sum:"KGS",rl:"DSNNO"}
+            {title:"CTTLM",sum:"MTS",rl:"RollCount"},
+            {title:"CTTLK",sum:"KGS",rl:"RollCount"},
+            {title:"DTTLM",sum:"RollCount",rl:"RollCount"}
+            // {title:"DTTLK",sum:"KGS",rl:"DSNNO"}
         ],
         
         // pageBreak:["P_Code"],
@@ -65,17 +66,18 @@ DataTables_jy.setting={
         // allrows:10
         circleRule:{
             maxCount:2,
-            margin:10,
-            circleItem:["Roll","MTS","KGS"]
+            margin:1,
+            // circleItem:["Roll","MTS","KGS"],
+            vcircleItem:["Roll","MTS","KGS"]
             },
-        circletd:[
-            {
-                fatherEle:"LOTNO",
-                top:"Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#,1,1,,#,1,1,,",
-                bottom:"total,1,6,,#&MTS&,1,1,,#&KGS&,1,1,,"
+        // circletd:[
+        //     {
+        //         fatherEle:"LOTNO",
+        //         top:"Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#Roll,1,1,,#MTS,1,1,,#KGS,1,1,,#,1,1,,#,1,1,,",
+        //         bottom:"total,1,6,,#&MTS&,1,1,,#&KGS&,1,1,,"
 
-            }
-        ]
+        //     }
+        // ]
     }
 }
 DataTables_jy.init();

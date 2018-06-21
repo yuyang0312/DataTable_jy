@@ -1055,6 +1055,15 @@
                
             }
             ColObject = getRowspan(data, Print);
+            
+        }
+        if(Print.circleRule&&Print.circleRule.vcircleItem ){
+            for(var coltext in ColObject){
+                for(var oo=0;oo<ColObject[coltext].length;oo++)
+                {
+                    ColObject[coltext][oo]*=Print.circleRule.vcircleItem.length;
+                }
+            }
         }
         /**开始生成单元格 */
         for (var i = 0; i < data.length; i++) {
@@ -1093,7 +1102,26 @@
                                 
                             }
                             printTable.appendChild(tr);
-                            tr = document.createElement("tr");
+                            if(contains(Print.circleRule.vcircleItem, text)>0 ){
+                            for(var ztext in ColObject){
+                                console.log(i+"--"+ztext+"--"+SpanCount[ztext]+"--"+ColObject[ztext][SpanCount[ztext]]);
+                                ColObject[ztext][SpanCount[ztext]]--;
+                                if (ColObject[ztext][SpanCount[ztext]] == 0) {
+                                    isRowspanCol[ztext] = true;
+                                    SpanCount[ztext]++;
+                                }
+                                
+                                if(ztext==text) break;
+
+                            }
+                        }
+                            
+                           if(contains(Print.circleRule.vcircleItem, text) <Print.circleRule.vcircleItem.length-1) 
+                           {
+                               tr = document.createElement("tr");
+                             
+                        }
+                            
                            
                         
                         }
