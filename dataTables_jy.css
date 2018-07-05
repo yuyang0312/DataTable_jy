@@ -2,9 +2,9 @@
 /*标题样式*/
 #dataTable .head td {
     text-align: center;
-    /*top: expression(this.offsetParent.scrollTop);
+    top: expression(this.offsetParent.scrollTop);
        position: relative;
-       z-index: 80;*/
+       z-index: 80;
        background-color: #98C8F4;
     text-align:center;
     border-collapse:collapse;

@@ -1,18 +1,22 @@
 ﻿(function (window) {
+    var targetEle;
     var TotalJson;
-    var oldLength = 10;
+    var oldLength = 100;
     NoUpdateTable = {
-        mipha: function (event, that, sqlstr,allsqlstr) {
+        mipha: function (event, that, sqlstr, allsqlstr) {
+            targetEle = that;
             var div = document.getElementById("yhh");
+        
+            //div.parentNode.removeChild
             if (!div) {
                 div = document.createElement("div");
                 div.style.height = "180px";
                 div.style.width = "370px";
-                div.style.overflow = "hidden";
+                //div.style.overflow = "auto";
                 div.style.position = "absolute";
                 div.style.zIndex = "99999";
                 div.id = "yhh";
-                div.innerHTML = "<div id=\"div\" style=\"height:200px;width:400px;overflow-y:scroll\">";
+                //div.innerHTML = "<div id=\"div\" style=\"height:200px;width:400px;overflow-y:scroll\">";
                 that.parentNode.appendChild(div);
                 div.style.backgroundColor = "#FFF";
                 div.style.textAlign = "center";
@@ -20,22 +24,25 @@
 
             }
             document.body.onclick = function () {
-                div.style.display = "none";
+                //div.style.display = "none";
+                div.parentNode.removeChild(div);
             }
             event = event || window.event;
 
             var flag = false;
             if (event.keyCode == 40) {
                 var table = document.getElementById("dataTable");
+                table.style.width = "100%";
                 var tr = table.getElementsByTagName("tbody")[0].firstChild;
                 tr.focus();
+               
                 tr.className = "selectedtr";
 
             } else if (event.keyCode != 9 && event.keyCode != 13) {
                 div.style.display = "block";
                 value = that.value;
                 if (value) {
-
+                    
                     Ajax.post("Handler2.ashx", "sqlstr=" + sqlstr, function (data) {
                         Totaljson = "";
                         flag = false;
@@ -45,27 +52,32 @@
                         } catch (e) {
                             json = "";
                         }
-                        oldLength = 10;
+                        oldLength = 100;
                         //console.log(data);
                         if (json["Rows"] && json["Rows"].length > 0) {
                             nswitch(json["Rows"]);
+                        } else {
+                            var yhh = document.getElementById("yhh");
+                            yhh.style.display = "none";
                         }
-                        var div = document.getElementById("div");
+                        var div = document.getElementById("yhh");
+                        if (allsqlstr) {
+                            Ajax.post("Handler2.ashx", "sqlstr=" + allsqlstr, function (data) {
+                                //console.log(data);
+                                try {
+                                    Totaljson = eval("(" + data + ")");
+                                    if (Totaljson["Rows"] && Totaljson["Rows"].length > 0) {
+                                        DataTables_jy.setting.data = Totaljson["Rows"];
+                                        DataTables_jy.setting.mode = "1";
+                                        DataTables_jy.init();
+                                    }
 
-                        Ajax.post("Handler2.ashx", "sqlstr=" + allsqlstr, function (data) {
-                            //console.log(data);
-                            try {
-                                Totaljson = eval("(" + data + ")");
-                                if (Totaljson["Rows"] && Totaljson["Rows"].length > 0) {
-                                    DataTables_jy.setting.data = Totaljson["Rows"];
-                                    DataTables_jy.init();
+                                } catch (e) {
+                                    Totaljson = "";
                                 }
 
-                            } catch (e) {
-                                Totaljson = "";
-                            }
-
-                        });
+                            });
+                        }
                         // nswitch(Totaljson["Rows"]);
                         div.onscroll = ScrollFun;
 
@@ -75,6 +87,7 @@
                     var div = document.getElementById("yhh");
                     div.style.display = "none";
                 }
+                
                 that.parentNode.style.position="relative";
                 div.style.top = that.offsetTop + that.offsetHeight;
                 var leftoff = parseFloat(that.offsetLeft);
@@ -92,50 +105,57 @@
     };
     window.NoUpdateTable = NoUpdateTable;
     function trclick(that) {
-        //var input = document.getElementById("ctl00_ContentPlaceHolder1_txtPlanNo");
+        var input = targetEle;
         //var inputer = document.getElementById("ctl00_ContentPlaceHolder1_txtInputer");
         //var P_Code = document.getElementById("ctl00_ContentPlaceHolder1_txtP_Code");
         //that.className = "selectedtr";
-        //input.value = that.childNodes[1].innerHTML;
+        input.value = that.childNodes[1].innerHTML;
         //inputer.value = that.childNodes[2].innerHTML;
         //P_Code.value = that.childNodes[3].innerHTML;
         var div = document.getElementById("yhh");
-        //input.focus();
-        div.style.display = "none";
+        input.focus();
+        //div.style.display = "none";
+        div.parentNode.removeChild(div);
+
+    
 
     }
-    window.trclick = trclick;
+    window.NoUpdatetrclick = trclick;
     function nswitch(z_data) {
-
         DataTables_jy.defaultsetting.data = "";
+        DataTables_jy.defaultsetting.theadMeaasge.headStr = "";
+        DataTables_jy.defaultsetting.showDetail = "";
         DataTables_jy.setting = {
             data: z_data,
             width: 460,
             keycol: 1000,
             pagesize: oldLength,
-            orderCol: true
+            orderCol: true,
+            mode:"1"
 
         }
 
         DataTables_jy.init();
-        var div = document.getElementById("div");
+        var div = document.getElementById("yhh");
         div.innerHTML = "";
         div.appendChild(DataTables_jy.createTable());
         var table = document.getElementById("dataTable");
+        table.style.width = "100%";
         var tr = table.getElementsByTagName("tbody")[0].firstChild;
-        tr&&(tr.className = "selectedtr");
+        tr && (tr.className = "selectedtr");
+
     }
     function ScrollFun() {
         var input = document.getElementById("ctl00_ContentPlaceHolder1_txtPlanNo");
 
-        var div = document.getElementById("div");
+        var div = document.getElementById("yhh");
         var divSrocllTop = div.scrollTop;
         var divScrollHeight = div.scrollHeight;
         var divClientHeigth = div.clientHeight;
         if (divSrocllTop > (divScrollHeight - divClientHeigth) / 2) {
 
 
-            oldLength = oldLength + 10;
+            oldLength = oldLength + 100;
             DataTables_jy.setting = {
                 pagesize: oldLength
 
@@ -183,7 +203,6 @@
         Regex += "/i";
         ////console.log(Regex);
         Regex = eval(Regex);
-        alert(Regex.test(name) + "-----" + name);
 
         return Regex.test(name);
     }

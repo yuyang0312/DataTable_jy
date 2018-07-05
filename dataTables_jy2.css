@@ -45,6 +45,7 @@ background-color:#fff;
     text-align:center;
     border-bottom:1px solid #ccc;
     empty-cells: show;
+    color:#000;
 }
 .selectedtr {
 background-color:#C8D5E0 !important;

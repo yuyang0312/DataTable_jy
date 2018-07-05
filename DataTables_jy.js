@@ -4,19 +4,19 @@
 
     var DataTables_jy={
      defaultsetting:{
-         data:"",
+         data:"",//数据
          search_data:"",//搜索到的数据
          isSearching: false,//是否属于筛选状态
          sqlString:"",//Ajax要执行语句
-         fatherArray:[],
-         width: '2800px',
+         fatherArray:[],//子项模式下时,父元素数组，由于子元素处于不显示状态
+         width: '2800px',//宽度,暂时没用
          range:5,        //分页左右显示范围
          table: "",
          tableDiv:"",
-         ul: "",
+         ul: "",//下方页码
          add_length:40,//每次增加的长度
          added_length: 40,//已增加长度
-         nowPageNum:1,
+         nowPageNum:1,//当前页码
          ulLength: -1,//ul长度
          loading:"",
          language: {
@@ -25,8 +25,8 @@
              per: "前一页",
              next:"下一页",
              turn:"跳转"
-         },
-         KeyWord:"",
+         },//设置那些字
+         KeyWord:"",//主键
          thwidth: [],
          pagesize:10, //每页数目
          FixedCol:[],//固定列
@@ -45,7 +45,7 @@
              "-4":"#0000FF",
              "-5": "#FFA500"
 
-         },
+         },//某行字体变色
          sum: [],
          keycol:0,//主键列
          orderCol:false,//序号列
@@ -53,6 +53,7 @@
             
          },
          Print: {
+             PrintheadStr:null,//循环列明
              Title: [],
              spanCols:[],//要跨行的列
              notshowCol: [],
@@ -67,13 +68,14 @@
              circleRule:null,//循环规则
              circletd: null,
              bottomTrObj: null,
-             bottom:""
+             bottom: "",
+             fatherTitle: null //父table标题
          },
          isDetailMarge:false,//是否合并明细
          printDiv: "",//打印导出
          mode: "",//模式
          strTotdRule: {//字符串转化为td,tr规则
-             splitStr: ["◆", "#", ","],//分割字符
+             splitStr: ["◆", "|", "^"],//分割字符
              Contont: ["innerHTML", "rowSpan", "colSpan", "data-sort-key", "width","style"]//各项信息
          }
      },
@@ -110,14 +112,14 @@
         headDiv.appendChild(input_Search);
         // 打印
         var print_button = document.createElement("img");
-        print_button.src = "/g2web/images/Print.png";
+        print_button.src = "/web/images/Print.png";
         headDiv.appendChild(print_button);
         print_button.title = "打印";
         print_button.onclick = function () { that.Print() }
 
         //导出
         var ExcelOut_button = document.createElement("img");
-        ExcelOut_button.src = "/g2web/images/ExcelOut.png";
+        ExcelOut_button.src = "/web/images/ExcelOut.png";
         headDiv.appendChild(ExcelOut_button);
         ExcelOut_button.title = "导出";
         ExcelOut_button.onclick = function () { that.ExcelOut() }
@@ -321,8 +323,12 @@
          var table = this.defaultsetting.table;
          table.id = "dataTable";
         // table.style.width = this.defaultsetting.width; 
-         var thead=this.createThead();
-
+         var thead = this.createThead();
+         var nowthead=table.getElementsByTagName("thead");
+         if (nowthead.length>0) {
+             table.removeChild(nowthead[0]);
+             
+         }
          table.appendChild(thead);//表头
          this.switchPage(1,table,this.defaultsetting.pagesize,this.defaultsetting.FixedCol);//表体           
          return table;
@@ -430,33 +436,33 @@
          var trlist = table.getElementsByTagName("tr");
          var length = trlist.length;
          //固定行,防止跨行产生的错误
-         //var rowspapnum = [];
-         //var F_Flag = true;
-         //var nk = FixedCol.length;
-         //for (var j = 0; j < length; j++) {  
-         //    var tdlist = trlist[j].getElementsByTagName("td");
+         var rowspapnum = [];
+         var F_Flag = true;
+         var nk = FixedCol.length;
+         for (var j = 0; j < length; j++) {  
+             var tdlist = trlist[j].getElementsByTagName("td");
              
                  
-         //   for (var k = 0; k < FixedCol.length&&k<nk; k++) {
-         //       addClass(tdlist[FixedCol[k]],"FixedDataColumn");
-         //       rowspapnum[k] = tdlist[FixedCol[k]].getAttribute("rowSpan");
-         //       if (k == FixedCol.length-1||k==nk-1) {
-         //           tdlist[FixedCol[k]].style.borderRight = "1px solid #000";
-         //       }     
+            for (var k = 0; k < FixedCol.length&&k<nk; k++) {
+                addClass(tdlist[FixedCol[k]],"FixedDataColumn");
+                rowspapnum[k] = tdlist[FixedCol[k]].getAttribute("rowSpan");
+                if (k == FixedCol.length-1||k==nk-1) {
+                    tdlist[FixedCol[k]].style.borderRight = "1px solid #000";
+                }     
 
-         //   }
-         //   nk = FixedCol.length;
+            }
+            nk = FixedCol.length;
             
 
-         //    for (var h = 0; h < rowspapnum.length; h++) {
-         //        if (rowspapnum[h] > 1) {
-         //            nk--;
-         //            rowspapnum[h]--;
-         //        }
-         //    }
+             for (var h = 0; h < rowspapnum.length; h++) {
+                 if (rowspapnum[h] > 1) {
+                     nk--;
+                     rowspapnum[h]--;
+                 }
+             }
                 
-         //    //alert(j + "--");
-         //}
+             //alert(j + "--");
+         }
          
          
          this.defaultsetting.summation && this.getSummary();
@@ -514,8 +520,14 @@
              tr.ondblclick = function () {
                  that.trdbclick(this);
              }
-             tr.onclick = function () {
-                 trclick(this);
+             if (this.defaultsetting.mode == "1") {
+                 tr.onclick = function () {
+                     NoUpdatetrclick(this);
+                 }
+             } else {
+                 tr.onclick = function () {
+                     trclick(this);
+                 }
              }
              var array = this.defaultsetting.showDetail;
 
@@ -626,7 +638,6 @@
              }
              this.defaultsetting.showDetail = arr;
          }
-         
          if(this.defaultsetting.isDetailMarge){
          var keyword=this.defaultsetting.KeyWord||this.defaultsetting.data[0][this.defaultsetting.data.keys[0]];
          this.defaultsetting.KeyWord=keyword;
@@ -692,11 +703,18 @@
          tr = document.createElement("tr");
          tr.height = "25px";
          tr.style.backgroundColor = "#98C8F4";
-         for (var k = 0; k < this.defaultsetting.showDetail.length; k++) {
+         var key = this.defaultsetting.keycol[0];
+         var FixedCol = this.defaultsetting.FixedCol;
+         if (key < this.defaultsetting.showDetail.length) var kk=k = 1;
+          else kk=k = 0;
+         for (; k < this.defaultsetting.showDetail.length; k++) {
              var tdData = this.defaultsetting.showDetail[k];
+             
              var td = document.createElement("td");
+             if (contains(FixedCol || [], (k - kk)) > -1) addClass(td, "FixedDataColumn");
              if (flag) {
                  td.innerHTML = "合计";
+                 addClass(td, "FixedDataColumn");
                  flag = false;
              }
              else if (contains(summation,tdData)>-1) {
@@ -711,7 +729,7 @@
              tr.appendChild(td);
              }
              
-        tbody.appendChild(tr);
+         tbody.appendChild(tr);
      },
      NumToChinese: function(table) {
        
@@ -802,18 +820,30 @@
          
      },
      CreataPrintTable: function () {
+         
         var Print = this.defaultsetting.Print;
         var div = document.createElement("div");
-        var thead = this.createThead();
         var data = "";
         if (this.defaultsetting.isSearching) {
             data = this.defaultsetting.search_data;
         } else {
             data = this.defaultsetting.data;
         }
-        
+        if (!Print.Items||Print.Items.length==0) {
+            for (var pis in data[0]) {
+                Print.Items.push(pis);
+            }
+        }
 
-       
+        if (this.defaultsetting.keycol.length > 0) {
+            Print.Items.shift();
+        }
+        if (!isEmptyObject(Print.circleRule) && Print.circleRule.maxCount && Print.allrows) {
+            if (Print.circleRule.maxCount > 0) Print.allrows = Print.allrows * Print.circleRule.maxCount;
+            
+        }
+
+
         var pageBreakeArray=[[]];//分页行数
         var n_index=0;
         var pageBreakeData=[];
@@ -821,13 +851,28 @@
             pageBreakeData[qq]=data[0][Print.pageBreak[qq]];
         }
         
-
-
+       
+        var pageCount = 1;
         for (var k = 0; k < data.length; k++) {       
         /*********分页********* */
         
             for(var q=0;q<Print.pageBreak.length;q++){
-               if(pageBreakeData[q]!=data[k][Print.pageBreak[q]]||(Print.allrows>0&&pageBreakeArray[n_index].length>Print.allrows)){
+               if(pageBreakeData[q]!=data[k][Print.pageBreak[q]]||(Print.allrows>0&&pageBreakeArray[n_index].length>=Print.allrows)){
+                
+                
+                if (pageBreakeData[q] != data[k][Print.pageBreak[q]]&&k>0) {
+                    var diff = pageCount % Print.onet_num;
+                    if (diff > 0) {
+                        for (var diff_index = diff; diff_index < Print.onet_num; diff_index++) {
+                            pageBreakeArray.push([]);
+                            n_index++;
+                        }
+                    }
+                    
+                    pageCount = 1;
+                        
+
+                }else if ((Print.allrows > 0 && pageBreakeArray[n_index].length >= Print.allrows)) pageCount++;
                 
                 pageBreakeArray.push([]);
                 n_index++;
@@ -837,7 +882,7 @@
                }
             }
             for (var dataText in data[k]) {
-                if (contains(Print.Items, dataText) == -1) {
+                if (contains(Print.Items, dataText) == -1 && contains(Print.Items, '--' + dataText) == -1 && contains(Print.Items, '[' + dataText+']') == -1) {
                     delete data[k][dataText];
                     
                 }
@@ -845,24 +890,31 @@
             pageBreakeArray[n_index].push(data[k]);
         /*********分页********* */
         }
-        
-        
-        /*********表头**********/
-        var cloneThead = thead.cloneNode(true);
-        //cloneThead.firstChild.removeChild(cloneThead.firstChild.firstChild);  
-        var theadtd = cloneThead.getElementsByTagName("td");
-        var thlength=theadtd.length;
-        for (var j = 0; j < thlength; j++) {
-            //theadtd[j].style.emptyCells = "show";
-            //theadtd[j].style.border = "1px solid #000";
-            //theadtd[j].style.textAlign = "center";
-            //if (contains(Print.Items, theadtd[j].getAttribute("data-sort-key")) > -1) theadtd[j].style.display = "";
-            //else theadtd[j].style.display="none";
-            
+       
+        var myThead = document.createElement("thead");
+         /*********循环列名**********/
+        if (Print.PrintheadStr) {
+            var trlist = getTrlistByStr(Print.PrintheadStr, this.defaultsetting.strTotdRule);
+
+            for (var f = 0; f < trlist.length; f++) {
+                myThead.appendChild(trlist[f]);
+            }
+        } else {
+            myThead = this.createThead();
         }
         /*********表头**********/
-
-
+        var trlist=myThead.getElementsByTagName("tr");
+        for (var trindex = 0; trindex < trlist.length; trindex++) {
+            var tdlist = trlist[trindex].getElementsByTagName("td");
+            for (var tdindex = 0; tdindex < tdlist.length; tdindex++) {
+                tdlist[tdindex].style.border = "1px solid #000";
+                tdlist[tdindex].style.textAlign = "center";
+              
+            }
+            if (this.defaultsetting.keycol.length > 0) {
+                trlist[trindex].removeChild(trlist[trindex].firstChild);
+            }
+        }
 
         /*********横向合计**********/
         //var r_SumtdArray={};
@@ -873,36 +925,75 @@
         //    td.style.border="1px solid #000";
         //    cloneThead.lastChild.appendChild(td);
         //}    
-        /*********横向合计********* */
+         /*********横向合计********* */
+        var pageBreakObj = {};
+       
         for(var u=0;u<pageBreakeArray.length;u++){
-                var printTable = document.createElement("table"); 
+            var printTable = document.createElement("table");
+            printTable.style.fontFamily = "tahoma";
+            printTable.style.fontSize = "9pt";
+            u == 0 &&( printTable.style.clear="left");
                 printTable.style.borderCollapse = "collapse";
                 printTable.style.tableLayout = "fixed";
                 
-                var nowthead=cloneThead.cloneNode(true);
+                var nowthead=myThead.cloneNode(true);
                 printTable.appendChild(nowthead); 
-                // console.log(pageBreakeArray[u].length+"---"+Print.allrows);   
-                if(pageBreakeArray[u].length<Print.allrows){
-                    for(var r=pageBreakeArray[u].length;r<Print.allrows;r++){
+                // 添加空白行  
+                if (Print.onet_num > 1) {
+                    var diff = u % Print.onet_num;
+                    var start = u - diff;
+                    var maxCount = Print.allrows;
+                    for (var uf = start; uf < start + Print.onet_num; uf++) {
+                        if (pageBreakeArray[uf] && pageBreakeArray[uf].length > maxCount) {
+                            maxCount = pageBreakeArray[uf].length;
+                        } 
+                    }
+                }
+                if (pageBreakeArray[u].length < maxCount) {
+                    for (var r = pageBreakeArray[u].length; r < maxCount; r++) {
                         var n_obj={};
                         for(var o=0;o<Print.Items.length;o++){
-                            n_obj[Print.Items[o]]="";
+                            n_obj[Print.Items[o]] = "";
+                            n_obj.isKB = true;
                         }
                         pageBreakeArray[u].push(n_obj);
                     }
 
                 }
-                this.CreatePrintBody(pageBreakeArray[u],printTable,Print);
+                
+                var tbody = document.createElement("tbody");
+                printTable.appendChild(tbody);
+                this.CreatePrintBody(pageBreakeArray[u], tbody, Print);
+            
                 if (Print.title) {
-                    var trlist = getTrlistByStr(Print.title, this.defaultsetting.strTotdRule);
+                    var str = resolveStr(Print.title, pageBreakeArray[u]);
+                    var trlist = getTrlistByStr(str, this.defaultsetting.strTotdRule);
                     for (var f = trlist.length - 1; f > -1; f--) {
                         nowthead.insertBefore(trlist[f], nowthead.firstChild);
                     }
                    
                    
                 }
+                //var firsttr = document.createElement("tr");
+                //var td = document.createElement("td");
+                //td.style.textAlign = "center";
+                //td.colSpan = 5;
+                //td.innerHTML = "<img src=\"c_logo.png\" style=\"height:30px;width:40px\"/></td>";
+                //firsttr.appendChild(td);
+                //var td = document.createElement("td");
+                //td.style.textAlign = "left";
+                //td.colSpan = 12;
+                //td.style.fontSize = "22pt";
+                //td.style.fontWeight = "bold";
+                //td.style.fontFamily = "tahoma";
+                //firsttr.appendChild(td);
+                //td.innerHTML = "SO YOUNG TEXTILE CO., LTD.";
+                //nowthead.insertBefore(firsttr, nowthead.firstChild);
+                
+
                 if (Print.Width.length > 0) {
                     var tr = document.createElement('tr');
+                    //tr.style.display = "none";
                     for (var k = 0  ; k < Print.Width.length; k++) {
                         var td = document.createElement("td");
                         td.style.height = "0px";
@@ -914,59 +1005,141 @@
                     nowthead.insertBefore(tr, nowthead.firstChild);
                 }
                 if (Print.bottom) {
-                    var trlist = getTrlistByStr(Print.bottom, this.defaultsetting.strTotdRule);
+                    var str = resolveStr(Print.bottom, pageBreakeArray[u]);
+                    var trlist = getTrlistByStr(str, this.defaultsetting.strTotdRule);
                     for (var f = 0; f < trlist.length; f++) {
-                        printTable.appendChild(trlist[f]);
+                       
+                        tbody.appendChild(trlist[f]);
                     }
                    
 
                 }
-        printTable.style.float  ="left";
-        if(u>0&&u%Print.onet_num==0){
-            var c_div=document.createElement("div");
-            c_div.style.clear="both";
-            div.appendChild(c_div);
-        }
-        div.appendChild(printTable);
-        }
-       
+                
 
+                
         
+        if ( u==0||u % Print.onet_num == 0) {
+            //var c_div=document.createElement("div");
+            //c_div.style.clear="both";
+            //div.appendChild(c_div);
+
+            var fatherTable = document.createElement("table");
+            fatherTable.style.marginTop = "10px";
+            //fatherTable.style.pageBreakAfter = "always";
+            var fatherTbody = document.createElement("tbody");
+            fatherTable.appendChild(fatherTbody);
+
+        }
+        
+        if (Print.fatherTitle) {
+            var o_outArray = Print.fatherTitle.split("&&&");
+            for (var o_o = 0; o_o < o_outArray.length; o_o++) {
+
+                var outArray = o_outArray[o_o].split("$$");
+                var c_array = [];               
+                   if (outArray[1]) {
+                    if (outArray[1] == "Total") {
+                        if (/sum\(.*\) /.test(outArray[0])) {
+                            for (var uuu = 0; uuu < pageBreakeArray.length; uuu++) {
+
+                                c_array = c_array.concat(pageBreakeArray[uuu]);
+                            }
+                        } else {
+                            c_array = pageBreakeArray[u];
+                        } 
+                        var myfTitle = resolveStr(outArray[0], c_array);
+                        var trlist = getTrlistByStr(myfTitle, this.defaultsetting.strTotdRule);
+                        if (u == 0) {
+                            for (var f = 0; f < trlist.length; f++) {
+                                fatherTbody.appendChild(trlist[f]);
+                            }
+                        }
+                    } else {
+                        if (pageBreakeArray[u][0][outArray[1]] && (pageBreakeArray[u][0][outArray[1]] != pageBreakObj[outArray[1]])) {                           
+                            for (var uuu = u; uuu < pageBreakeArray.length; uuu++) {
+                                
+                                if (pageBreakeArray[uuu][0]&&pageBreakeArray[u][0][outArray[1]] == pageBreakeArray[uuu][0][outArray[1]])
+                                {
+                                    c_array=c_array.concat(pageBreakeArray[uuu]);
+                                }
+                            }
+                            var myfTitle = resolveStr(outArray[0], c_array);
+                            var trlist = getTrlistByStr(myfTitle, this.defaultsetting.strTotdRule);
+                            pageBreakObj[outArray[1]] = pageBreakeArray[u][0][outArray[1]];
+                            for (var f = 0; f < trlist.length; f++) {
+                                fatherTbody.appendChild(trlist[f]);
+                            }
+                        }
+
+                    }
+
+                   } else {
+                       var myfTitle = resolveStr(outArray[0], pageBreakeArray[u]);
+                       var trlist = getTrlistByStr(myfTitle, this.defaultsetting.strTotdRule);
+                       if (u == 0 || u % Print.onet_num == 0) {
+
+                        for (var f = 0; f < trlist.length; f++) {
+                            fatherTbody.appendChild(trlist[f]);
+                        }
+                    }
+
+                }
+
+            }
+        }
+        if (u == 0 || u % Print.onet_num == 0) {
+
+
+            var fatherTr = document.createElement("tr");
+            fatherTbody.appendChild(fatherTr);
+
+        }
+        var fatherTd = document.createElement("td");
+        fatherTd.style.border = "none";
+        fatherTr.appendChild(fatherTd);
+        fatherTd.appendChild(printTable);
+        //printTable.style.float  ="left";
+        
+        div.appendChild(fatherTable);
+        }
+              
         this.defaultsetting.printDiv = div;
         return div;
         
      },
-     CreatePrintBody:function(data,printTable,Print){
+     CreatePrintBody: function (data, printTable, Print) {
         //  var isRowspanCol=deepCloneObj(isRowspanCol);var ColObject=deepCloneObj(ColObject);
         //  var SpanCount=deepCloneObj(SpanCount);var s_Index=deepCloneObj(s_Index);var r_SumtdArray=deepCloneObj(r_SumtdArray);
-        
+        var tdRowspanArray = [];
         var ColObject = getRowspan(data,Print);
         var oldArray = new Array(Print.spanCols.length);
         var CountArray = [];//计数
         var SpanCount = {};//计数 
         var isRowspanCol = {};//是否为跨行列
         var s_Index={};
-        var r_SumtdArray={};
-        for(var j=0;j<Print.r_Sum.length;j++)
-        {
-            r_SumtdArray[Print.r_Sum[j].title]=document.createElement("td");
-        }    
-        for (var p = 0; p < Print.spanCols.length; p++) {
-        
-            SpanCount[Print.spanCols[p]]=0;
-            isRowspanCol[Print.spanCols[p]]=true;
-            s_Index[Print.spanCols[p]]=0;
+        var r_SumtdArray = {};
+        if (Print.r_Sum) {
+            for (var j = 0; j < Print.r_Sum.length; j++) {
+                r_SumtdArray[Print.r_Sum[j].title] = document.createElement("td");
+            }
+        }
+        if (Print.spanCols) {
+            for (var p = 0; p < Print.spanCols.length; p++) {
+
+                SpanCount[Print.spanCols[p]] = 0;
+                isRowspanCol[Print.spanCols[p]] = true;
+                s_Index[Print.spanCols[p]] = 0;
+            }
         }
 
-        
         var sortArray=Print.Items;
             if(!sortArray||sortArray.length==0){
                 for(var text in data[i]){
                     sortArray.push(text);
                 }
             }
-        if(Print.circleRule){
-            var lastArr= ColObject[Print.spanCols[Print.spanCols.length-1]];
+            if (!isEmptyObject(Print.circleRule) && Print.circleRule.maxCount) {
+            var lastArr = isEmptyObject(ColObject)?[data.length]:ColObject[Print.spanCols[Print.spanCols.length - 1]];
             var newdata=[];
             for(var b=0;b<lastArr.length;b++)
             {
@@ -977,16 +1150,17 @@
                     start+=lastArr[r];
                 }
                 for(var g=start;g<start+num;g++){
-                    tempArray.push(deepCloneObj(data[g]));
+                    data[g]&&tempArray.push(deepCloneObj(data[g]));
                 }
+                
                 newdata=newdata.concat(reranobjArr(tempArray,Print.circleRule));
             }
             data=newdata;
             ColObject = getRowspan(data, Print);
 
         }
-
-        if (Print.circletd) {
+         
+            if (!isEmptyObject(Print.circletd)) {
             var bottomobj = {};
             for (var c = 0; c < Print.circletd.length; c++) {
                 var r_data = Print.circletd[c].fatherEle;
@@ -1015,7 +1189,7 @@
                                     if (inn_Text.startsWith("--")) {
                                         var resultSum = 0;
                                         for (var data_index = colresultCount; data_index < colresultCount + ColObject[r_data][colindex]; data_index++) {
-                                            if ("--RollCount" == inn_Text) {
+                                            if ("--卷号" == inn_Text) {
                                                 if (Object.prototype.toString.call(data[data_index]["卷号"]) == '[object Array]') {
                                                     
                                                     for (var ii = 0; ii < data[data_index]["卷号"].length; ii++) {
@@ -1030,7 +1204,7 @@
                                                 resultSum += getSumbyArray(data[data_index][inn_Text.replace("--", "")]);
                                             }
                                         }
-                                        bottomtdArray[bottom_index].innerHTML = resultSum.toFixed(2);
+                                        bottomtdArray[bottom_index].innerHTML = resultSum.toFixed(inn_Text == "--卷号" || inn_Text == "--包号" ? 0 : 2);
                                     }
                                     tr.appendChild(bottomtdArray[bottom_index]);
                                 }
@@ -1065,6 +1239,8 @@
                 }
             }
         }
+
+        
         /**开始生成单元格 */
         for (var i = 0; i < data.length; i++) {
            
@@ -1077,8 +1253,24 @@
                 for (var p = 0; p < sortArray.length; p++) {
                     var text = sortArray[p];
 
+                    if ((/\[.*\]/.test(text))) {
+                        continue;
+                    }
+                    if (text.startsWith("--")) {
+                        for (var key in r_SumtdArray) {
+                            if (r_SumtdArray[key].getAttribute("tag") == text.replace("--", "")) {
+                                r_SumtdArray[key].innerHTML && tr.appendChild(r_SumtdArray[key]);
+
+                                r_SumtdArray[key] = document.createElement("td");
+                            }
+                        }
+                        continue;
+                    }
+                    
                     if (Print.circleRule && ((Print.circleRule.circleItem && contains(Print.circleRule.circleItem, text) > -1) || (Print.circleRule.vcircleItem && contains(Print.circleRule.vcircleItem, text) > -1))) {
+                   
                         if (Print.circleRule.circleItem && contains(Print.circleRule.circleItem, text) > -1) {
+                           
                             if (isFirstCycle) {
                                 isFirstCycle = false;
                                 for (var h = 0; h < data[i][text].length; h++)
@@ -1090,21 +1282,66 @@
                                         td.style.textAlign = "center";
                                         tr.appendChild(td);
                                     }
+                                if (Print.r_Sum) {
+                                    
+                                    for (var r_Index = 0; r_Index < Print.r_Sum.length; r_Index++) {
+                                        if (Print.r_Sum[r_Index].rl == "ROW") {
+                                            var r_SumInner = 0;
+                                            
+                                            if (Print.r_Sum[r_Index].sum == "卷号") {
+                                                for (var zz = 0; zz < data[i]["卷号"].length; zz++) {
+                                                    if (data[i]["卷号"][zz]) r_SumInner++;
+                                                }
+                                               
+                                            }
+                                            else{
+                                                r_SumInner += getSumbyArray(data[i][Print.r_Sum[r_Index].sum]);
+                                            }
+
+                                            var td = document.createElement("td");
+                                            td.innerHTML = Print.r_Sum[r_Index].sum == "卷号" ? r_SumInner.toFixed(0) : r_SumInner.toFixed(2);
+                                            td.style.emptyCells = "show";
+                                            td.style.border = "1px solid #000";
+                                            td.style.textAlign = "center";
+                                            tr.appendChild(td);
+                                            
+                                        }
+                                    }
+                                }
                             }
                         } else if (Print.circleRule.vcircleItem && contains(Print.circleRule.vcircleItem, text) > -1) {
+                           
+                            var td = document.createElement("td");
+                            if (Print.circleRule.vcircleItemName) td.innerHTML = Print.circleRule.vcircleItemName[contains(Print.circleRule.vcircleItem, text)];
+                                else td.innerHTML = text;
+                                td.style.emptyCells = "show";
+                                td.style.border = "1px solid #000";
+                                td.style.textAlign = "center";
+                                if (text == "卷号") td.style.backgroundColor = "#C0C0C0";
+                                if (contains(Print.circleRule.vcircleItem, text)==0) tr.appendChild(td);
+                                else vtr.appendChild(td);
                             for (var h = 0; h < data[i][text].length; h++) {
+                                
                                 var td = document.createElement("td");
                                 td.innerHTML = data[i][text][h];
                                 td.style.emptyCells = "show";
                                 td.style.border = "1px solid #000";
                                 td.style.textAlign = "center";
-                                tr.appendChild(td);
+                                if (text == "卷号") td.style.backgroundColor = "#C0C0C0";
+                                if (contains(Print.circleRule.vcircleItem, text) == 0) tr.appendChild(td);
+                                else vtr.appendChild(td);
                                 
                             }
-                            printTable.appendChild(tr);
+                            if (contains(Print.circleRule.vcircleItem, text) == 0)
+                            {
+                                printTable.appendChild(tr);
+                                tr.setAttribute("appended","appended");
+                            }
+                            else printTable.appendChild(vtr);
+                           
                             if(contains(Print.circleRule.vcircleItem, text)>0 ){
                             for(var ztext in ColObject){
-                                console.log(i+"--"+ztext+"--"+SpanCount[ztext]+"--"+ColObject[ztext][SpanCount[ztext]]);
+                              
                                 ColObject[ztext][SpanCount[ztext]]--;
                                 if (ColObject[ztext][SpanCount[ztext]] == 0) {
                                     isRowspanCol[ztext] = true;
@@ -1114,13 +1351,86 @@
                                 if(ztext==text) break;
 
                             }
-                        }
-                            
+                            }
+                            if (Print.r_Sum) {
+                                for (var r_Index = 0; r_Index < Print.r_Sum.length; r_Index++) {
+                                    if (Print.r_Sum[r_Index].rl == "ROW") {
+                                        var r_SumInner = 0;
+                                        var r_SumArray = Print.r_Sum[r_Index].sum.split("|");
+                                        if (r_SumArray.length > 1) {
+                                            if (text == "卷号" && Print.r_Sum[r_Index].sum.indexOf("卷号") > -1) {
+
+                                                for (var zz = 0; zz < data[i]["卷号"].length; zz++) {
+                                                    if (data[i]["卷号"][zz]) r_SumInner++;
+                                                }
+                                            } else if (text == "包号" && Print.r_Sum[r_Index].sum.indexOf("包号") > -1) {
+
+                                                for (var ii = 0; ii < data[data_index]["包号"].length; ii++) {
+                                                    if (Bale != pageBreakeArray[u][uu]["包号"]) {
+
+                                                        Bale = pageBreakeArray[u][uu]["包号"]
+                                                        r_SumInner++;
+                                                    }
+                                                }
+
+                                            }
+                                            else if (Print.r_Sum[r_Index].sum.indexOf(text) > -1) {
+                                                    r_SumInner += getSumbyArray(data[i][text]);
+                                                
+                                            }
+                                        } else {
+                                            if (text == "卷号" && Print.r_Sum[r_Index].sum.indexOf("卷号") > -1) {
+
+                                                for (var zz = 0; zz < data[i]["卷号"].length; zz++) {
+                                                    if (data[i]["卷号"][zz]) r_SumInner++;
+                                                }
+                                            } else if (text == "包号" && Print.r_Sum[r_Index].sum.indexOf("包号") > -1) {
+
+                                                for (var ii = 0; ii < data[data_index]["包号"].length; ii++) {
+                                                    if (Bale != pageBreakeArray[u][uu]["包号"]) {
+
+                                                        Bale = pageBreakeArray[u][uu]["包号"]
+                                                        r_SumInner++;
+                                                    }
+                                                }
+
+                                            } else {
+                                                r_SumInner += getSumbyArray(data[i][Print.r_Sum[r_Index].sum]);
+                                            }
+                                        }
+                                        
+                                        if (r_SumArray.length == 1 && isFirstCycle) {
+                                            var td = document.createElement("td");
+                                           
+                                            td.rowSpan = Print.circleRule.vcircleItem.length;
+                                            td.innerHTML = r_SumInner.toFixed(Print.r_Sum[r_Index].sum == "卷号" || Print.r_Sum[r_Index].sum == "包号" ? 0 : 2);
+                                            td.style.emptyCells = "show";
+                                            td.style.border = "1px solid #000";
+                                            td.style.textAlign = "center";
+                                            tr.appendChild(td);
+                                        }
+                                        else if (r_SumArray.length > 1) {
+                                            var td = document.createElement("td");
+                                            td.innerHTML = Print.r_Sum[r_Index].sum.indexOf(text) > -1 ? r_SumInner.toFixed(text == "卷号" || text == "包号" ? 0 : 2):"";
+                                            td.style.emptyCells = "show";
+                                            td.style.border = "1px solid #000";
+                                            td.style.textAlign = "center";
+                                            if (contains(Print.circleRule.vcircleItem, text) == 0) tr.appendChild(td);
+                                            else vtr.appendChild(td);
+                                        }
+                                       
+                                    }
+                                    
+                                }
+                                isFirstCycle = false;
+                            }
+
+
                            if(contains(Print.circleRule.vcircleItem, text) <Print.circleRule.vcircleItem.length-1) 
                            {
-                               tr = document.createElement("tr");
+                              var vtr = document.createElement("tr");
                              
-                        }
+                           }
                             
                            
                         
@@ -1132,15 +1442,22 @@
                         td.style.emptyCells = "show";
                         td.style.border = "1px solid #000";
                         td.style.textAlign = "center";
+                        td.vAlign = "center";
+                        if (Print.circleRule&&Print.circleRule.vcircleItem) {
+                            td.rowSpan = Print.circleRule.vcircleItem.length;
+                        }
+                        td.setAttribute("rowSpanCount", 1);
 
                         if (contains(Print.spanCols, text) > -1) {
                            
                             //跨行显示
                             if (isRowspanCol[text]) {
-                                
+                          
                                 for (var ps = 0; ps < Print.r_Sum.length; ps++) {
+                               
                                     var diffnum=0;
                                     if (Print.r_Sum[ps].rl == text) {
+                                
                                         if (Print.circletd) {
                                             for (var c = 0; c < Print.circletd.length; c++) {
                                                 if (Print.circletd[c].fatherEle == text) {
@@ -1155,32 +1472,91 @@
                                         }
 
                                                     
-                                        r_SumtdArray[Print.r_Sum[ps].title].rowSpan = ColObject[text][SpanCount[text]]-diffnum;
+                                        r_SumtdArray[Print.r_Sum[ps].title].rowSpan = ColObject[text][SpanCount[text]] - diffnum;
+                                        r_SumtdArray[Print.r_Sum[ps].title].setAttribute("rowSpanCount", ColObject[text][SpanCount[text]] - diffnum);
                                         var r_SumInner = 0;
+                                        var Bale = "";
+                                        var sumarrayobj = {};
                                         for (var zz = s_Index[text]; zz < s_Index[text] + ColObject[text][SpanCount[text]]; zz++) {
-                                        if(!data[zz]["countflag"]){
-                                            if (Print.r_Sum[ps].sum == "RollCount") r_SumInner++
-                                            else {
-                                                var sumarray=data[zz][Print.r_Sum[ps].sum];
-                                                if(Object.prototype.toString.call(sumarray)=='[object Array]'){
-                                                    for(var y=0;y<sumarray.length;y++){
-                                                        r_SumInner+=parseFloat(sumarray[y]==""?"0":sumarray[y]);
-                                                       
+                                            
+                                            if (data[zz] && !data[zz]["countflag"]) {
+                                              
+                                                if (!/sum\(.*\)/.test(Print.r_Sum[ps].sum)) {
+                                                    if (Print.r_Sum[ps].sum == "卷号" && data[zz][Print.r_Sum[ps].sum]) {
+                                                        if (Object.prototype.toString.call(data[zz][Print.r_Sum[ps].sum]) == '[object Array]') {
+                                                            for (var pss = 0; pss < data[zz][Print.r_Sum[ps].sum].length; pss++) {
+                                                                if (data[zz][Print.r_Sum[ps].sum][pss]) r_SumInner++;
+                                                            }
+                                                        } else {
+                                                            r_SumInner++;
+                                                        }
                                                     }
-                                                }else{
-                                                 r_SumInner += parseFloat(data[zz][Print.r_Sum[ps].sum]==""?"0":data[zz][Print.r_Sum[ps].sum]);
+                                                    else if (Print.r_Sum[ps].sum == "包号") {
+
+                                                        if (Bale != data[zz][Print.r_Sum[ps].sum]) {
+
+                                                            Bale = data[zz][Print.r_Sum[ps].sum]
+                                                            r_SumInner++;
+                                                        }
+
+
+                                                    }
+
+                                                    else {
+                                                        r_SumInner += getSumbyArray(data[zz][Print.r_Sum[ps].sum]);
+                                                    }
+                                                   
+                                                } else {
+                                                    var sumarray = Print.r_Sum[ps].sum.match(/sum\(.*?\)/gi);
+                                                   
+                                                    for (var sar = 0; sar < sumarray.length; sar++) {
+                                                        var sartext = sumarray[sar].replace("sum(", "").replace(")", "");
+                                                        if (sumarrayobj[sartext]) {
+                                                            
+                                                            if (sartext == "卷号") {
+                                                                for (var tz = 0; tz < data[zz][sartext].length; tz++) {
+                                                                    data[zz][sartext][tz]&&sumarrayobj["卷号"]++;
+                                                                }
+                                                            }
+                                                            else sumarrayobj[sartext] += getSumbyArray(data[zz][sartext]);
+                                                          
+                                                        } else {
+                                                            if (sartext == "卷号") {
+                                                                sumarrayobj["卷号"] = 0;
+                                                                for (var tz = 0; tz < data[zz][sartext].length; tz++) {
+                                                                    data[zz][sartext][tz] && sumarrayobj["卷号"]++;
+                                                                }
+                                                                
+                                                            }
+                                                            else sumarrayobj[sartext] = getSumbyArray(data[zz][sartext]);
+                                                        }
+                                                    }
+                                                  
+                                                    
                                                 }
-                                            }
                                         }
                                            
 
                                         }
-                                        r_SumtdArray[Print.r_Sum[ps].title].innerHTML = r_SumInner.toFixed(2);
+                                        var resultValue = Print.r_Sum[ps].sum;
+                                        if (/sum\(.*\)/.test(Print.r_Sum[ps].sum)) {
+                                            for (var sumarrayobjtext in sumarrayobj) {
+                                                resultValue = resultValue.replace("sum(" + sumarrayobjtext + ")", '\r\n'+sumarrayobj[sumarrayobjtext].toFixed(sumarrayobjtext == "卷号" ? 0 : 2));
+                                            }
+
+                                        } else {
+                                            resultValue=r_SumInner==0?"&nbsp;":r_SumInner.toFixed((Print.r_Sum[ps].sum == "卷号"||Print.r_Sum[ps].sum == "包号")?0:2);
+                                        }
+                                        r_SumtdArray[Print.r_Sum[ps].title].innerHTML = resultValue;
+                                        //r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "right";
+                                        //r_SumtdArray[Print.r_Sum[ps].title].vAlign = "bottom";
+                                        r_SumtdArray[Print.r_Sum[ps].title].setAttribute("tag", Print.r_Sum[ps].sum);
                                         r_SumInner = 0;
 
                                         r_SumtdArray[Print.r_Sum[ps].title].style.emptyCells = "show";
                                         r_SumtdArray[Print.r_Sum[ps].title].style.border = "1px solid #000";
-                                        r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "center";
+                                        //r_SumtdArray[Print.r_Sum[ps].title].style.verticalAlign = "bottom";
+
                                     }
                                 }
                                 
@@ -1238,6 +1614,8 @@
 
                                 td.setAttribute("data-kh", "kh");
                                 td.rowSpan = rowspanCount;
+                                td.setAttribute("rowSpanCount", rowspanCount);
+                                //td.style.verticalAlign = "bottom";
                                 isRowspanCol[text] = false;
                                 ColObject[text][SpanCount[text]]--;
                                 if (ColObject[text][SpanCount[text]] == 0) {
@@ -1257,37 +1635,37 @@
                             }
                             continue;
                         }
-
+                        
                         tr.appendChild(td);
 
                     }
                     t++;
                 }
-                for (var ps = 0; ps < Print.r_Sum.length; ps++) {
+                //for (var ps = 0; ps < Print.r_Sum.length; ps++) {
 
-                    if (Print.r_Sum[ps].rl == "ROW") {
-                        var r_SumInner = 0;
-                        if (Print.r_Sum[ps].sum == "RollCount") {
-                            for (var zz = 0; zz < data[i]["卷号"].length; zz++) {
-                                if (data[i]["卷号"][zz]) r_SumInner++;
-                            }
-                        }
-                        else {
-                            for (var zz = 0; zz < data[i][Print.r_Sum[ps]["sum"]].length; zz++) {
+                //    if (Print.r_Sum[ps].rl == "ROW") {
+                //        var r_SumInner = 0;
+                //        if (Print.r_Sum[ps].sum == "RollCount") {
+                //            for (var zz = 0; zz < data[i]["卷号"].length; zz++) {
+                //                if (data[i]["卷号"][zz]) r_SumInner++;
+                //            }
+                //        }
+                //        else {
+                //            for (var zz = 0; zz < data[i][Print.r_Sum[ps]["sum"]].length; zz++) {
 
-                                r_SumInner += parseFloat(data[i][Print.r_Sum[ps]["sum"]][zz] == "" ? "0" : data[i][Print.r_Sum[ps]["sum"]][zz]);
+                //                r_SumInner += parseFloat(data[i][Print.r_Sum[ps]["sum"]][zz] == "" ? "0" : data[i][Print.r_Sum[ps]["sum"]][zz]);
 
-                            }
-                        }
-                        r_SumtdArray[Print.r_Sum[ps].title].innerHTML = r_SumInner.toFixed(2);
-                        r_SumInner = 0;
+                //            }
+                //        }
+                //        r_SumtdArray[Print.r_Sum[ps].title].innerHTML = r_SumInner.toFixed(2);
+                //        r_SumInner = 0;
 
-                        r_SumtdArray[Print.r_Sum[ps].title].style.emptyCells = "show";
-                        r_SumtdArray[Print.r_Sum[ps].title].style.border = "1px solid #000";
-                        r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "center";
-                    }
-                }
-
+                //        r_SumtdArray[Print.r_Sum[ps].title].style.emptyCells = "show";
+                //        r_SumtdArray[Print.r_Sum[ps].title].style.border = "1px solid #000";
+                //        r_SumtdArray[Print.r_Sum[ps].title].style.textAlign = "center";
+                //    }
+                //}
+                
                 for (var key in r_SumtdArray) {
                     r_SumtdArray[key].innerHTML && tr.appendChild(r_SumtdArray[key]);
 
@@ -1295,18 +1673,59 @@
                 }
 
 
+                if (!tr.getAttribute("appended")&&tr.firstChild)
+                {
+                    var tdlist = tr.getElementsByTagName("td");
+                    var tdflag = true;
+                    for (var tdindex = 0; tdindex < Print.Items.length; tdindex++) {
+                        if (Print.Items[tdindex].indexOf("[") == -1 && Print.Items[tdindex].indexOf("--") == -1 && contains(Print.spanCols, Print.Items[tdindex]) == -1)
+                        {
+                            tdflag = false;
+                            
+                        }
+                    }
+                    if (tdflag) {
+                   
+                        if (tdlist.length > 2) {//根据最大公约数压缩rowspan
+                            var minRowSpan = tdlist[0].getAttribute("rowSpanCount");
+                            tdRowspanArray.push(tdlist[0]);
+                            for (var tdindex = 1; tdindex < tdlist.length; tdindex++) {
+                                if (parseInt(tdlist[tdindex].getAttribute("rowSpanCount")) < parseInt(minRowSpan)) {
+                                    minRowSpan = tdlist[tdindex].getAttribute("rowSpanCount");
 
-                printTable.appendChild(tr);
+                                }
+                                tdRowspanArray.push(tdlist[tdindex]);
+
+                            }
+
+
+                            for (var y = 0; y < tdRowspanArray.length; y++) {
+                                if (tdRowspanArray[y].getAttribute("rowSpanCount") > 1) {
+
+                                    tdRowspanArray[y].setAttribute("rowSpanCount", parseInt(tdRowspanArray[y].getAttribute("rowSpanCount")) - (minRowSpan - 1));
+                                    tdRowspanArray[y].rowSpan = tdRowspanArray[y].getAttribute("rowSpanCount");
+
+                                }
+                            }
+                        }
+                    }
+                    
+                        printTable.appendChild(tr);
+                    
+                }
                 if (clonebottomtr) {
                     printTable.appendChild(clonebottomtr);
+                    //console.log(clonebottomtr);
                 }
 
             }
 
             if (Print.c_Sum.length > 0) {
+
                 if (Print.c_Sum[0].cl == "total") {
 
                     printTable.appendChild(Print.c_Sum[0].tr);
+
                 }
             }
         }
@@ -1385,36 +1804,42 @@
  }
 /**获取跨行 */
  function getRowspan(data,Print){
-    var ColObject={};
-    var CountArray=[];
-    var oldArray = new Array(Print.spanCols.length);
-    for (var p = 0; p < Print.spanCols.length; p++) {
-        ColObject[Print.spanCols[p]] = [1];
-        CountArray.push(0);
-        
-    }
+     var ColObject = {};
+     if (Print.spanCols) {
+         var CountArray = [];
+         var oldArray = new Array(Print.spanCols.length);
+         for (var p = 0; p < Print.spanCols.length; p++) {
+             ColObject[Print.spanCols[p]] = [1];
+             CountArray.push(0);
 
-    for (var k = 0; k < data.length; k++) {
-        /*********合并行********* */
-           for (var l = 0; l < Print.spanCols.length; l++) {
-               if (oldArray[l] == data[k][Print.spanCols[l]]) {
-                   if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
-                   ColObject[Print.spanCols[l]][CountArray[l]]++;
-                   
-               } else {
-                   oldArray[l] = data[k][Print.spanCols[l]];
-                   k > 0 && CountArray[l]++;
-                   if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
+         }
 
-               }
-           }}
-    var keyarray=[];
-    for(var key in ColObject){
-        keyarray.push(key);
-    }
-    for(var i=0;i<keyarray.length-1;i++){
-        ColObject[keyarray[i+1]]=regroup(ColObject[keyarray[i]],ColObject[keyarray[i+1]]);
-    }
+         for (var k = 0; k < data.length; k++) {
+             /*********合并行********* */
+             for (var l = 0; l < Print.spanCols.length; l++) {
+                 if (oldArray[l] == data[k][Print.spanCols[l]] && !data[k]["isKB"]) {
+
+                     if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
+                     ColObject[Print.spanCols[l]][CountArray[l]]++;
+
+                 } else {
+
+                     oldArray[l] = data[k][Print.spanCols[l]];
+                     k > 0 && CountArray[l]++;
+                     if (ColObject[Print.spanCols[l]][CountArray[l]] == undefined) ColObject[Print.spanCols[l]][CountArray[l]] = 1;
+
+                 }
+             }
+         }
+         var keyarray = [];
+         for (var key in ColObject) {
+             keyarray.push(key);
+         }
+
+         for (var i = 0; i < keyarray.length - 1; i++) {
+             ColObject[keyarray[i + 1]] = regroup(ColObject[keyarray[i]], ColObject[keyarray[i + 1]]);
+         }
+     }
     return ColObject;
  }
 /************对象深克隆***************/
@@ -1453,11 +1878,11 @@ function getSumbyArray(target) {
     var result=0;
     if (Object.prototype.toString.call(target) == '[object Array]') {
         for (var y = 0; y < target.length; y++) {
-            result += parseFloat(target[y] == "" ? "0" : target[y]);
+            result += parseFloat(target[y] ? target[y] : "0");
 
         }
     } else {
-        result = parseFloat(target == "" ? "0" : target);
+        result = parseFloat(target ? target : "0");
 
     }
     return result;
@@ -1473,7 +1898,8 @@ function getTdlistByStr(str,Rule){
     var tdarray = str.split(Rule.splitStr[1]);
     var tdlist=[];
     for(var i=0;i<tdarray.length;i++){
-        var td=document.createElement("td");
+        var td = document.createElement("td");
+        
         var tdDeatil = tdarray[i].split(Rule.splitStr[2]);
         for (var j = 0; j < tdDeatil.length; j++) {
             if (Rule.Contont[j] == "innerHTML") td.innerHTML = tdDeatil[j];
@@ -1502,6 +1928,7 @@ function getTrlistByStr(str,Rule) {
 
 /**根据循环规则重写数组 */
 function reranobjArr(jsonData, row) {
+    
     var circleItem = row.circleItem||row.vcircleItem;
     
         var length = jsonData.length;
@@ -1528,7 +1955,7 @@ function reranobjArr(jsonData, row) {
                         }
                     } else {
                         for (var h = 0; h < circleItem.length; h++) {
-                            newObj[circleItem[h]].push("");
+                            newObj[circleItem[h]]&&newObj[circleItem[h]].push("");
 
 
                         }
@@ -1612,6 +2039,46 @@ function addtrRowspan(tr, num, isRowspanCol) {
          tr[i].style.display="none";
      }
  }
+ }
+
+ function resolveStr(str, objArray) {
+     
+     var regexArray = str.match(/\[.*?\]/g);
+     var myfTitle = str;
+     if (objArray) {
+         if (regexArray) {
+             for (var ri = 0; ri < regexArray.length; ri++) {
+
+                 var text = objArray[0][regexArray[ri].replace("[", "").replace("]", "")];
+                 //console.log(regexArray[ri].replace("[", "").replace("]", ""));
+                 myfTitle = myfTitle.replace(regexArray[ri], text ? text : "");
+
+             }
+         }
+
+         var sumarray = str.match(/sum\(.*?\)/gi);
+         if (sumarray) {
+             for (var sa = 0; sa < sumarray.length; sa++) {
+                 var innText = sumarray[sa].replace("sum(", "").replace(")", "");
+
+                 var innSum = 0;
+                 for (var uu = 0; uu < objArray.length; uu++) {
+
+                     if (innText == "卷号" && objArray[uu]["卷号"]) innSum++;
+                     else if (innText == "包号") {
+                         if (Bale != objArray[uu]["包号"]) {
+                             Bale = objArray[uu]["包号"]
+                             innSum++;
+                         }
+                     }
+                     else
+                         innSum += getSumbyArray(objArray[uu][innText]);
+                 }
+                 myfTitle = myfTitle.replace(sumarray[sa], innSum ? innSum.toFixed(innText == "卷号" || innText == "包号" ? 0 : 2) : "");
+             }
+         }
+     }
+     return myfTitle;
  }
  function extendObj() { //扩展对象
         var args = arguments;
@@ -1715,7 +2182,7 @@ function trclick(that) {
 
     }
 function trkeyup(thetr, e, that,tbody) {//tr上下滚动
-    
+
     var event = e || window.event;
     if(event.keyCode==40){
         var nexttr = thetr.nextSibling;
@@ -1723,6 +2190,11 @@ function trkeyup(thetr, e, that,tbody) {//tr上下滚动
             nexttr.focus();
             thetr.className = "";
             nexttr.className = "selectedtr";
+            var div=thetr.parentNode;
+            while (div.id != "div" && div.parentNode) {
+                div = div.parentNode;
+            }
+        
         }
     } else if (event.keyCode == 38) {
         
@@ -1844,6 +2316,15 @@ function getChinese(num) {
     }
     return inte + str;
 }
+    /*最大公约数*/
+function getBigFactor(a, b) {
+;
+
+    if(b==0){
+        return a;
+    }
+    return getBigFactor(b,a%b)
+}
 function stopBubble(e) {
     if (e && e.stopPropagation) { //非IE 
         e.stopPropagation();
@@ -1956,6 +2437,13 @@ String.prototype.startsWith = function (str) {
         return false;
     return true;
 };
+//判断对象是否为{}
+function isEmptyObject(e) {
+    var t;
+    for (t in e)
+        return !1;
+    return !0
+}
 //function checkCookie() {
 //    var user = getCookie("username");
 //    if (user != "") {
